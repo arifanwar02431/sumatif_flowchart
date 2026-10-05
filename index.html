@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sumatif Flowchart Kelas 6 (Native Canvas)</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; 
+            touch-action: none; /* Mencegah pull-to-refresh di HP */
+        }
+        
+        #app-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            flex-direction: column;
+        }
+
+        @media (min-width: 1024px) {
+            #app-container { flex-direction: row; }
+        }
+
+        #canvas-wrapper {
+            flex: 1;
+            position: relative;
+            background-color: #f1f5f9;
+            overflow: hidden;
+            cursor: grab;
+        }
+        
+        #canvas-wrapper:active {
+            cursor: grabbing;
+        }
+
+        /* Ini adalah elemen Native HTML5 Canvas */
+        #flowCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            outline: none;
+            /* Pola titik untuk efek buku tulis */
+            background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+            background-position: 0 0;
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <!-- SIDEBAR SOAL -->
+        <aside class="w-full lg:w-80 bg-white border-r border-slate-200 flex flex-col flex-shrink-0 shadow-[4px_0_24px_rgba(0,0,0,0.05)] z-30 h-48 lg:h-full">
+            <div class="p-5 bg-emerald-500 text-white flex items-center gap-4 shadow-md">
+                <i class="fa-solid fa-graduation-cap text-4xl"></i>
+                <div>
+                    <h1 class="font-black text-xl leading-tight tracking-wide">Ujian Sumatif</h1>
+                    <p class="text-sm opacity-90 font-semibold">Flowchart Kelas 6</p>
+                </div>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-4 space-y-3" id="question-list">
+                <!-- Daftar Soal Dibuat lewat JS -->
+            </div>
+
+            <div class="p-4 border-t border-slate-100 bg-slate-50 text-center">
+                <button onclick="submitWork()" class="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl shadow-lg transition-transform hover:-translate-y-1 flex items-center justify-center gap-2 text-lg">
+                    <i class="fa-solid fa-paper-plane"></i> Kumpul Jawaban
+                </button>
+            </div>
+        </aside>
+
+        <!-- AREA UTAMA & TOOLBAR -->
+        <main class="flex-1 flex flex-col relative bg-slate-50">
+            <header class="bg-white border-b border-slate-200 p-4 shadow-sm z-20 flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center relative">
+                <div class="flex-1 max-w-2xl">
+                    <span class="inline-block px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-md mb-2 uppercase tracking-wider" id="q-badge">Soal 1</span>
+                    <p class="font-bold text-slate-700 text-sm leading-relaxed" id="q-text">Teks soal.</p>
+                </div>
+
+                <div class="flex flex-col items-center lg:items-end gap-2 w-full lg:w-auto bg-slate-50 p-2 rounded-xl border border-slate-200">
+                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest"><i class="fa-solid fa-shapes"></i> Tambah Bangun Ruang</div>
+                    <div class="flex gap-2">
+                        <button onclick="addNode('terminator')" class="p-2 bg-rose-100 text-rose-700 hover:bg-rose-200 rounded-xl w-14 h-12 flex items-center justify-center shadow-sm transition-transform hover:scale-105" title="Mulai / Selesai">
+                            <div class="w-8 h-4 border-2 border-rose-500 rounded-full"></div>
+                        </button>
+                        <button onclick="addNode('process')" class="p-2 bg-sky-100 text-sky-700 hover:bg-sky-200 rounded-xl w-14 h-12 flex items-center justify-center shadow-sm transition-transform hover:scale-105" title="Proses">
+                            <div class="w-8 h-5 border-2 border-sky-500 rounded-sm"></div>
+                        </button>
+                        <button onclick="addNode('data')" class="p-2 bg-green-100 text-green-700 hover:bg-green-200 rounded-xl w-14 h-12 flex items-center justify-center shadow-sm transition-transform hover:scale-105" title="Input / Output">
+                            <div class="w-7 h-5 border-2 border-green-500 transform -skew-x-12"></div>
+                        </button>
+                        <button onclick="addNode('decision')" class="p-2 bg-yellow-100 text-yellow-700 hover:bg-yellow-200 rounded-xl w-14 h-12 flex items-center justify-center shadow-sm transition-transform hover:scale-105" title="Decision (Pilihan)">
+                            <div class="w-6 h-6 border-2 border-yellow-500 rotate-45"></div>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- KANVAS AREA -->
+            <div id="canvas-wrapper">
+                <!-- Panduan -->
+                <div class="absolute top-4 right-4 z-40 bg-white/90 backdrop-blur-md px-4 py-3 rounded-xl border border-slate-200 shadow-lg text-xs font-semibold text-slate-700 flex flex-col gap-2 max-w-[240px] pointer-events-none">
+                    <p class="flex items-center gap-2"><i class="fa-solid fa-hand text-blue-500 w-4 text-center"></i> Seret kertas untuk menggeser pandangan.</p>
+                    <p class="flex items-center gap-2"><i class="fa-solid fa-link text-emerald-500 w-4 text-center"></i> Klik 2 titik kuning untuk sambung garis.</p>
+                    <p class="flex items-center gap-2"><i class="fa-solid fa-i-cursor text-purple-500 w-4 text-center"></i> Klik ganda (Double-click) pada bangun untuk mengubah teksnya.</p>
+                </div>
+                
+                <!-- Tombol Hapus/Reset -->
+                <div class="absolute bottom-6 left-6 z-40 flex gap-3">
+                    <button onclick="promptClearCanvas()" class="px-5 py-3 bg-white text-slate-600 border border-slate-300 rounded-xl shadow-lg font-bold hover:bg-slate-50 flex items-center gap-2 transition-transform hover:scale-105">
+                        <i class="fa-solid fa-broom"></i> Bersihkan
+                    </button>
+                    <button onclick="deleteSelected()" id="btn-delete" class="px-5 py-3 bg-red-50 text-red-600 border border-red-200 rounded-xl shadow-lg font-bold hover:bg-red-100 items-center gap-2 transition-transform hover:scale-105 hidden">
+                        <i class="fa-solid fa-trash"></i> Hapus
+                    </button>
+                </div>
+
+                <!-- CANVAS NATIVE HTML5 -->
+                <canvas id="flowCanvas" tabindex="0"></canvas>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL EDIT TEKS -->
+    <div id="text-modal" class="fixed inset-0 bg-slate-900/60 items-center justify-center p-4 z-[99999] hidden backdrop-blur-sm">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+            <h3 class="text-lg font-black text-slate-800 mb-4"><i class="fa-solid fa-pen-to-square text-blue-500"></i> Ubah Teks Bangun</h3>
+            <textarea id="text-input" class="w-full border-2 border-slate-200 rounded-xl p-3 text-slate-700 font-bold outline-none focus:border-blue-500 min-h-[100px] resize-none" placeholder="Ketik di sini..."></textarea>
+            <div class="flex gap-3 justify-end mt-4">
+                <button onclick="closeTextModal()" class="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition-colors">Batal</button>
+                <button onclick="saveTextModal()" class="px-5 py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg shadow-md">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL NOTIFIKASI -->
+    <div id="custom-modal" class="fixed inset-0 bg-slate-900/70 items-center justify-center p-4 z-[999999] hidden backdrop-blur-sm">
+        <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full text-center shadow-2xl transform transition-all scale-100">
+            <div id="modal-icon-container" class="w-24 h-24 mx-auto bg-slate-50 border-4 border-slate-100 rounded-full flex items-center justify-center mb-5 shadow-inner">
+                <i id="modal-icon" class="fa-solid fa-circle-question text-6xl"></i>
+            </div>
+            <h3 id="modal-title" class="text-2xl font-black text-slate-800 mb-2 tracking-tight">Judul</h3>
+            <p id="modal-message" class="text-slate-600 mb-8 font-medium leading-relaxed">Pesan modal</p>
+            <div class="flex gap-3 justify-center">
+                <button id="modal-btn-cancel" class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition-colors">Batal</button>
+                <button id="modal-btn-ok" class="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl flex-1 shadow-[0_4px_14px_rgba(16,185,129,0.4)] transition-transform hover:scale-105">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            { id: 1, title: "Soal 1: Beli Es Krim", text: "Andi ingin beli es krim Rp 10.000. Masukkan uang. Apakah uang >= 10.000? Jika YA (Tarik kanan): 'Makan es krim' lalu selesai. Jika TIDAK (Tarik bawah): 'Uang kurang', lalu KEMBALI tarik garis ke atas meminta uang lagi." },
+            { id: 2, title: "Soal 2: Diskon Supermarket", text: "Input total belanja. Apakah belanja > Rp 100.000? Jika YA (Kanan), hitung Diskon 10%. Jika TIDAK (Bawah), Diskon 0. Lalu gabungkan alur, apakah punya Kartu Member? Jika YA (Kanan), tambah diskon. Tampilkan Total Bayar dan selesai." },
+            { id: 3, title: "Soal 3: Mesin ATM", text: "Input PIN. Apakah PIN benar? Jika YA (Kanan): 'Menu ATM' lalu Selesai. Jika TIDAK (Bawah): Apakah salah 3 kali? Jika TIDAK (Bawah), tarik garis kembali ke Input PIN. Jika YA (Kanan), 'Kartu Diblokir' lalu Selesai." },
+            { id: 4, title: "Soal 4: Lampu Lalu Lintas", text: "Baca sensor jumlah mobil. Jika mobil > 20 (Kanan), Set Hijau = 60 detik. Jika mobil <= 20 (Bawah), Set Hijau = 30 detik. Setelah durasi ditentukan, tampilkan 'Lampu Hijau Menyala' lalu selesai." },
+            { id: 5, title: "Soal 5: Pinjam Buku", text: "Siswa ingin meminjam buku. Bawa Kartu Perpus? Jika TIDAK (Bawah): 'Ditolak'. Jika YA (Kanan): Punya denda? Jika YA (Kanan): 'Bayar denda' lalu 'Ditolak'. Jika TIDAK (Bawah): 'Buku dipinjam' lalu selesai." },
+            { id: 6, title: "Soal 6: Genap atau Ganjil", text: "Input sebuah angka. Apakah angka habis dibagi 2? Jika YA (Kanan): Tampilkan 'Angka Genap'. Jika TIDAK (Bawah): Tampilkan 'Angka Ganjil'. Gabungkan alur, lalu selesai." },
+            { id: 7, title: "Soal 7: Alarm Pagi (Looping)", text: "Bunyikan Alarm. Apakah sudah bangun? Jika TIDAK (Bawah): Tunggu 5 menit, lalu tarik garis KEMBALI ke atas (Bunyikan Alarm lagi). Jika YA (Kanan): Matikan alarm, lalu selesai." },
+            { id: 8, title: "Soal 8: Kelulusan Siswa", text: "Input Nilai Ujian. Apakah Nilai >= 75? Jika YA (Kanan): 'LULUS'. Jika TIDAK (Bawah): 'REMEDIAL'. Gabungkan alur garisnya, 'Terima Rapor' lalu Selesai." },
+            { id: 9, title: "Soal 9: Bikin Teh Manis", text: "Tuang air teh dan gula, lalu aduk. Apakah sudah manis? Jika TIDAK (Bawah): Tambah gula lagi, tarik garis kembali ke atas (aduk lagi). Jika YA (Kanan): Teh siap disajikan, lalu selesai." },
+            { id: 10, title: "Soal 10: Bermain Game", text: "Karakter bermain. Kena rintangan? Jika YA (Kanan): Nyawa berkurang 1. Apakah nyawa == 0? Jika YA (Kanan): Game Over. Jika TIDAK (Bawah): Ulangi level (Tarik ke atas). Jika TIDAK kena rintangan (Bawah dari awal): Lanjut main." }
+        ];
+
+        let currentQuestionIndex = 0;
+        // Generate state statis untuk 10 pertanyaan
+        let appState = Array.from({ length: questions.length }, () => ({ nodes: [], edges: [] }));
+
+        // KONFIGURASI NATIVE CANVAS
+        const canvas = document.getElementById('flowCanvas');
+        const ctx = canvas.getContext('2d');
+        const wrapper = document.getElementById('canvas-wrapper');
+        
+        let camera = { x: 0, y: 0 }; // Untuk Panning Kertas
+        
+        // VARIABEL INTERAKSI CANVAS
+        let selectedNodeId = null;
+        let selectedEdgeId = null;
+        let hoveredPort = null; // { nodeId, port }
+        let hoveredNode = null;
+        let connectingPort = null; // { nodeId, port }
+        
+        let isDraggingNode = false;
+        let isPanningCanvas = false;
+        let dragOffset = { x: 0, y: 0 };
+        let lastMousePos = { x: 0, y: 0 };
+        let worldMousePos = { x: 0, y: 0 };
+        
+        let editingNodeId = null; 
+
+        // Konstanta Ukuran Bangun
+        const NODE_W = 160;
+        const NODE_H = 80;
+        const PORT_RADIUS = 8;
+        const HIT_PADDING = 15; // Jarak toleransi klik
+
+        window.onload = () => {
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            renderSidebar();
+            selectQuestion(0);
+            
+            // Mouse & Touch Events untuk Native Canvas
+            canvas.addEventListener('pointerdown', handlePointerDown);
+            window.addEventListener('pointermove', handlePointerMove); // Listen di window agar tidak lepas saat drag cepat
+            window.addEventListener('pointerup', handlePointerUp);
+            canvas.addEventListener('dblclick', handleDoubleClick);
+            
+            // Delete support
+            canvas.addEventListener('keydown', (e) => {
+                if (e.key === 'Delete' || e.key === 'Backspace') {
+                    deleteSelected();
+                }
+            });
+            
+            // Render Loop (60 FPS)
+            requestAnimationFrame(renderCanvas);
+        };
+
+        function resizeCanvas() {
+            // Support Retina Display (High DPI)
+            const rect = wrapper.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            canvas.style.width = `${rect.width}px`;
+            canvas.style.height = `${rect.height}px`;
+            ctx.scale(dpr, dpr);
+            renderCanvas();
+        }
+
+        function renderSidebar() {
+            const list = document.getElementById('question-list');
+            list.innerHTML = '';
+            questions.forEach((q, index) => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left p-4 rounded-2xl border-2 transition-all flex flex-col gap-2 ${
+                    index === currentQuestionIndex 
+                    ? 'border-emerald-500 bg-emerald-50 shadow-md' 
+                    : 'border-transparent bg-slate-50 hover:bg-slate-100 border-slate-200'
+                }`;
+                btn.onclick = () => selectQuestion(index);
+                btn.innerHTML = `
+                    <span class="font-black text-sm ${index === currentQuestionIndex ? 'text-emerald-700' : 'text-slate-700'}">${q.title}</span>
+                    <span class="text-xs line-clamp-3 leading-relaxed text-slate-500 font-semibold">${q.text}</span>
+                `;
+                list.appendChild(btn);
+            });
+        }
+
+        function selectQuestion(index) {
+            connectingPort = null;
+            selectedNodeId = null;
+            selectedEdgeId = null;
+            currentQuestionIndex = index;
+            renderSidebar();
+            document.getElementById('q-badge').innerText = `Soal ${index + 1}`;
+            document.getElementById('q-text').innerText = questions[index].text;
+            
+            // Reset Kamera ke tengah
+            camera = { x: 0, y: 0 };
+            updateBackgroundPan();
+            renderCanvas();
+        }
+
+        function updateBackgroundPan() {
+            // Menggeser pola titik background CSS agar seirama dengan canvas
+            canvas.style.backgroundPosition = `${camera.x}px ${camera.y}px`;
+        }
+
+        function showCustomConfirm(title, message, onConfirm, iconClass, confirmText) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            document.getElementById('modal-icon').className = `fa-solid ${iconClass}`;
+            
+            const btnCancel = document.getElementById('modal-btn-cancel');
+            const btnOk = document.getElementById('modal-btn-ok');
+            
+            if (onConfirm) {
+                btnCancel.classList.remove('hidden');
+                btnOk.className = "px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-black rounded-xl flex-1 shadow-[0_4px_14px_rgba(239,68,68,0.4)] transition-transform hover:scale-105";
+            } else {
+                btnCancel.classList.add('hidden');
+                btnOk.className = "px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl w-full shadow-[0_4px_14px_rgba(16,185,129,0.4)] transition-transform hover:scale-105";
+            }
+            
+            btnOk.innerText = confirmText || "OK";
+            const modal = document.getElementById('custom-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            btnCancel.onclick = () => { modal.classList.add('hidden'); modal.classList.remove('flex'); };
+            btnOk.onclick = () => { modal.classList.add('hidden'); modal.classList.remove('flex'); if(onConfirm) onConfirm(); };
+        }
+
+        function generateId() { return 'id_' + Math.random().toString(36).substr(2, 9); }
+
+        function addNode(type) {
+            // Hitung tengah layar dikurangi posisi kamera
+            const rect = wrapper.getBoundingClientRect();
+            const centerX = (rect.width / 2) - camera.x - (NODE_W / 2);
+            const centerY = (rect.height / 2) - camera.y - (NODE_H / 2);
+
+            const node = {
+                id: generateId(),
+                type: type,
+                x: centerX,
+                y: centerY,
+                text: type === 'terminator' ? 'Mulai / Selesai' : type === 'decision' ? 'Apakah..?' : 'Proses Data'
+            };
+            
+            appState[currentQuestionIndex].nodes.push(node);
+            selectedNodeId = node.id;
+            selectedEdgeId = null;
+            updateUIVisibility();
+            renderCanvas();
+        }
+
+        // Fungsi mendapatkan kordinat absolut Port di dunia Canvas
+        function getPortPos(node, portDir) {
+            let h = node.type === 'decision' ? 100 : NODE_H;
+            if (portDir === 'top') return { x: node.x + NODE_W/2, y: node.y };
+            if (portDir === 'right') return { x: node.x + NODE_W, y: node.y + h/2 };
+            if (portDir === 'bottom') return { x: node.x + NODE_W/2, y: node.y + h };
+            if (portDir === 'left') return { x: node.x, y: node.y + h/2 };
+            return { x: node.x, y: node.y };
+        }
+
+        function checkHitPort(wx, wy) {
+            const state = appState[currentQuestionIndex];
+            for (let i = state.nodes.length - 1; i >= 0; i--) {
+                const node = state.nodes[i];
+                const ports = ['top', 'right', 'bottom', 'left'];
+                for (const p of ports) {
+                    const pos = getPortPos(node, p);
+                    // Hitbox lebih besar (radius + padding)
+                    if (Math.hypot(wx - pos.x, wy - pos.y) < PORT_RADIUS + HIT_PADDING) {
+                        return { nodeId: node.id, port: p };
+                    }
+                }
+            }
+            return null;
+        }
+
+        function checkHitNode(wx, wy) {
+            const state = appState[currentQuestionIndex];
+            // Loop terbalik agar node paling atas (terakhir dirender) kena duluan
+            for (let i = state.nodes.length - 1; i >= 0; i--) {
+                const node = state.nodes[i];
+                let h = node.type === 'decision' ? 100 : NODE_H;
+                if (wx >= node.x && wx <= node.x + NODE_W && wy >= node.y && wy <= node.y + h) {
+                    return node;
+                }
+            }
+            return null;
+        }
+
+        function checkHitEdge(wx, wy) {
+            // Pendekatan sederhana: cek bounding box dengan margin dari garis lengkung
+            const state = appState[currentQuestionIndex];
+            for (let i = state.edges.length - 1; i >= 0; i--) {
+                const edge = state.edges[i];
+                const fromNode = state.nodes.find(n => n.id === edge.from);
+                const toNode = state.nodes.find(n => n.id === edge.to);
+                if (!fromNode || !toNode) continue;
+                
+                const p1 = getPortPos(fromNode, edge.fromPort);
+                const p2 = getPortPos(toNode, edge.toPort);
+                
+                // Hitung jarak titik mouse ke segmen garis lurus (sebagai perkiraan hitbox kasar tapi efektif)
+                const dist = pointToLineDistance(wx, wy, p1.x, p1.y, p2.x, p2.y);
+                if (dist < 15) return edge.id; // Lebar klik 15px
+            }
+            return null;
+        }
+
+        function pointToLineDistance(x, y, x1, y1, x2, y2) {
+            var A = x - x1;
+            var B = y - y1;
+            var C = x2 - x1;
+            var D = y2 - y1;
+            var dot = A * C + B * D;
+            var len_sq = C * C + D * D;
+            var param = -1;
+            if (len_sq != 0) param = dot / len_sq;
+            var xx, yy;
+            if (param < 0) { xx = x1; yy = y1; }
+            else if (param > 1) { xx = x2; yy = y2; }
+            else { xx = x1 + param * C; yy = y1 + param * D; }
+            var dx = x - xx;
+            var dy = y - yy;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        function handlePointerDown(e) {
+            canvas.focus(); // Pastikan bisa nangkap keyboard
+            const rect = wrapper.getBoundingClientRect();
+            // Koordinat Layar
+            const screenX = e.clientX - rect.left;
+            const screenY = e.clientY - rect.top;
+            
+            // Koordinat Dunia (Kanvas)
+            const wx = screenX - camera.x;
+            const wy = screenY - camera.y;
+            
+            lastMousePos = { x: screenX, y: screenY };
+
+            // 1. Cek Port dulu (karena prioritas di atas)
+            const hitPort = checkHitPort(wx, wy);
+            if (hitPort) {
+                if (!connectingPort) {
+                    connectingPort = hitPort; // Mulai tarik garis
+                    selectedNodeId = hitPort.nodeId;
+                    selectedEdgeId = null;
+                } else {
+                    // Jika sudah klik port, lalu klik port lain, sambungkan!
+                    if (connectingPort.nodeId !== hitPort.nodeId) {
+                        createEdge(connectingPort.nodeId, connectingPort.port, hitPort.nodeId, hitPort.port);
+                    }
+                    connectingPort = null;
+                }
+                updateUIVisibility();
+                renderCanvas();
+                return;
+            }
+
+            // Jika klik di luar saat sedang narik garis = Batal narik garis
+            if (connectingPort) {
+                connectingPort = null;
+                renderCanvas();
+                return;
+            }
+
+            // 2. Cek Bangun (Node)
+            const hitNode = checkHitNode(wx, wy);
+            if (hitNode) {
+                selectedNodeId = hitNode.id;
+                selectedEdgeId = null;
+                isDraggingNode = true;
+                dragOffset = { x: wx - hitNode.x, y: wy - hitNode.y };
+                updateUIVisibility();
+                renderCanvas();
+                return;
+            }
+
+            // 3. Cek Garis (Edge)
+            const hitEdge = checkHitEdge(wx, wy);
+            if (hitEdge) {
+                selectedEdgeId = hitEdge;
+                selectedNodeId = null;
+                updateUIVisibility();
+                renderCanvas();
+                return;
+            }
+
+            // 4. Jika klik ruang kosong = Panning Kertas
+            selectedNodeId = null;
+            selectedEdgeId = null;
+            isPanningCanvas = true;
+            wrapper.style.cursor = 'grabbing';
+            updateUIVisibility();
+            renderCanvas();
+        }
+
+        function handlePointerMove(e) {
+            const rect = wrapper.getBoundingClientRect();
+            const screenX = e.clientX - rect.left;
+            const screenY = e.clientY - rect.top;
+            
+            worldMousePos = { x: screenX - camera.x, y: screenY - camera.y };
+            
+            // Hover deteksi untuk mengubah cursor (hanya jalan di dalam area canvas)
+            if (e.target === canvas) {
+                const hPort = checkHitPort(worldMousePos.x, worldMousePos.y);
+                const hNode = checkHitNode(worldMousePos.x, worldMousePos.y);
+                hoveredPort = hPort;
+                hoveredNode = hNode ? hNode.id : null;
+                
+                if (hPort) wrapper.style.cursor = 'crosshair';
+                else if (hNode) wrapper.style.cursor = 'pointer';
+                else if (!isPanningCanvas) wrapper.style.cursor = 'grab';
+            }
+
+            if (isPanningCanvas) {
+                const dx = screenX - lastMousePos.x;
+                const dy = screenY - lastMousePos.y;
+                camera.x += dx;
+                camera.y += dy;
+                lastMousePos = { x: screenX, y: screenY };
+                updateBackgroundPan();
+            } 
+            else if (isDraggingNode && selectedNodeId) {
+                const state = appState[currentQuestionIndex];
+                const node = state.nodes.find(n => n.id === selectedNodeId);
+                if (node) {
+                    node.x = worldMousePos.x - dragOffset.x;
+                    node.y = worldMousePos.y - dragOffset.y;
+                }
+            }
+        }
+
+        function handlePointerUp(e) {
+            if (isDraggingNode) isDraggingNode = false;
+            
+            if (isPanningCanvas) {
+                isPanningCanvas = false;
+                wrapper.style.cursor = 'grab';
+            }
+        }
+
+        function handleDoubleClick(e) {
+            const rect = wrapper.getBoundingClientRect();
+            const wx = (e.clientX - rect.left) - camera.x;
+            const wy = (e.clientY - rect.top) - camera.y;
+            
+            const hitNode = checkHitNode(wx, wy);
+            if (hitNode) {
+                openTextModal(hitNode.id, hitNode.text);
+            }
+        }
+
+        function createEdge(fromId, fromPort, toId, toPort) {
+            const state = appState[currentQuestionIndex];
+            const exists = state.edges.some(e => e.from === fromId && e.fromPort === fromPort && e.to === toId && e.toPort === toPort);
+            if (!exists) {
+                state.edges.push({ id: generateId(), from: fromId, fromPort: fromPort, to: toId, toPort: toPort });
+            }
+        }
+
+        function updateUIVisibility() {
+            const btn = document.getElementById('btn-delete');
+            if (selectedNodeId || selectedEdgeId) {
+                btn.classList.remove('hidden'); btn.classList.add('flex');
+            } else {
+                btn.classList.add('hidden'); btn.classList.remove('flex');
+            }
+        }
+
+        function deleteSelected() {
+            const state = appState[currentQuestionIndex];
+            if (selectedNodeId) {
+                state.nodes = state.nodes.filter(n => n.id !== selectedNodeId);
+                state.edges = state.edges.filter(e => e.from !== selectedNodeId && e.to !== selectedNodeId);
+            } else if (selectedEdgeId) {
+                state.edges = state.edges.filter(e => e.id !== selectedEdgeId);
+            }
+            selectedNodeId = null;
+            selectedEdgeId = null;
+            updateUIVisibility();
+            renderCanvas();
+        }
+
+        // FUNGSI UTAMA RENDER CANVAS (LOOPING)
+        function renderCanvas() {
+            const rect = wrapper.getBoundingClientRect();
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Hapus layar
+            
+            ctx.save();
+            ctx.translate(camera.x, camera.y); // Geser kamera dunia
+
+            const state = appState[currentQuestionIndex];
+
+            // 1. GAMBAR SEMUA GARIS (EDGES)
+            state.edges.forEach(edge => {
+                const fromNode = state.nodes.find(n => n.id === edge.from);
+                const toNode = state.nodes.find(n => n.id === edge.to);
+                if (!fromNode || !toNode) return;
+
+                const p1 = getPortPos(fromNode, edge.fromPort);
+                const p2 = getPortPos(toNode, edge.toPort);
+
+                const isSelected = (edge.id === selectedEdgeId);
+                ctx.strokeStyle = isSelected ? '#3b82f6' : '#64748b';
+                ctx.lineWidth = isSelected ? 5 : 3;
+
+                // Garis Bezier Lengkung yang cantik
+                const curve = Math.max(Math.abs(p2.y - p1.y) / 2, Math.abs(p2.x - p1.x) / 2, 50);
+                
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.bezierCurveTo(p1.x, p1.y + curve, p2.x, p2.y - curve, p2.x, p2.y);
+                ctx.stroke();
+
+                // Panah di ujung (toPort)
+                drawArrowhead(ctx, p2.x, p2.y, p2.x, p2.y - curve);
+
+                // Teks YA / TIDAK Khusus untuk Belah Ketupat (Decision)
+                if (fromNode.type === 'decision') {
+                    ctx.font = '900 14px Nunito';
+                    if (edge.fromPort === 'right') {
+                        ctx.fillStyle = '#16a34a'; // Hijau
+                        ctx.fillText('YA (TRUE)', p1.x + 40, p1.y - 15);
+                    } else if (edge.fromPort === 'bottom') {
+                        ctx.fillStyle = '#dc2626'; // Merah
+                        ctx.fillText('TIDAK (FALSE)', p1.x + 55, p1.y + 20);
+                    }
+                }
+            });
+
+            // 2. GAMBAR GARIS SEMENTARA (Saat Klik Sambungan Pertama)
+            if (connectingPort) {
+                const node = state.nodes.find(n => n.id === connectingPort.nodeId);
+                if (node) {
+                    const p1 = getPortPos(node, connectingPort.port);
+                    ctx.strokeStyle = '#3b82f6';
+                    ctx.lineWidth = 4;
+                    ctx.setLineDash([8, 8]); // Garis Putus-putus
+                    ctx.beginPath();
+                    ctx.moveTo(p1.x, p1.y);
+                    
+                    const curve = Math.max(Math.abs(worldMousePos.y - p1.y) / 2, Math.abs(worldMousePos.x - p1.x) / 2, 50);
+                    ctx.bezierCurveTo(p1.x, p1.y + curve, worldMousePos.x, worldMousePos.y - curve, worldMousePos.x, worldMousePos.y);
+                    ctx.stroke();
+                    ctx.setLineDash([]); // Reset agar garis lain tak putus-putus
+                    
+                    // Panah sementara
+                    drawArrowhead(ctx, worldMousePos.x, worldMousePos.y, worldMousePos.x, worldMousePos.y - curve);
+                }
+            }
+
+            // 3. GAMBAR SEMUA BANGUN (NODES)
+            state.nodes.forEach(node => {
+                ctx.save();
+                ctx.translate(node.x, node.y);
+
+                const isSelected = (node.id === selectedNodeId);
+                let w = NODE_W;
+                let h = node.type === 'decision' ? 100 : NODE_H;
+
+                // Konfigurasi Bayangan (Shadow)
+                ctx.shadowColor = isSelected ? 'rgba(59, 130, 246, 0.5)' : 'rgba(0, 0, 0, 0.1)';
+                ctx.shadowBlur = isSelected ? 15 : 10;
+                ctx.shadowOffsetY = 4;
+
+                ctx.beginPath();
+                if (node.type === 'terminator') {
+                    ctx.fillStyle = '#fecdd3'; ctx.strokeStyle = '#f43f5e';
+                    // Fallback jika roundRect blm didukung browser tua
+                    if(ctx.roundRect) ctx.roundRect(0, 0, w, h, 40);
+                    else { ctx.rect(0,0,w,h); } 
+                } 
+                else if (node.type === 'process') {
+                    ctx.fillStyle = '#bae6fd'; ctx.strokeStyle = '#0ea5e9';
+                    if(ctx.roundRect) ctx.roundRect(0, 0, w, h, 8);
+                    else { ctx.rect(0,0,w,h); }
+                } 
+                else if (node.type === 'data') {
+                    ctx.fillStyle = '#bbf7d0'; ctx.strokeStyle = '#22c55e';
+                    ctx.moveTo(20, 0); ctx.lineTo(w, 0); ctx.lineTo(w-20, h); ctx.lineTo(0, h); ctx.closePath();
+                } 
+                else if (node.type === 'decision') {
+                    ctx.fillStyle = '#fef08a'; ctx.strokeStyle = '#eab308';
+                    ctx.moveTo(w/2, 0); ctx.lineTo(w, h/2); ctx.lineTo(w/2, h); ctx.lineTo(0, h/2); ctx.closePath();
+                }
+
+                ctx.fill();
+                
+                // Matikan bayangan untuk stroke
+                ctx.shadowColor = 'transparent';
+                ctx.lineWidth = isSelected ? 4 : 3;
+                if(isSelected) ctx.strokeStyle = '#3b82f6';
+                ctx.stroke();
+
+                // Gambar Teks Terpusat
+                ctx.fillStyle = '#1e293b';
+                ctx.font = 'bold 13px Nunito';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                wrapTextCanvas(ctx, node.text, w/2, h/2, w - 30, 18);
+
+                ctx.restore(); // Kembalikan koordinat asli
+
+                // 4. GAMBAR TITIK PORTS (Lingkaran Kuning)
+                // Selalu tampilkan port agar gampang diklik
+                const ports = ['top', 'right', 'bottom', 'left'];
+                ports.forEach(p => {
+                    const pos = getPortPos(node, p);
+                    const isHoveredPort = (hoveredPort && hoveredPort.nodeId === node.id && hoveredPort.port === p);
+                    const isActivePort = (connectingPort && connectingPort.nodeId === node.id && connectingPort.port === p);
+                    
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, (isHoveredPort || isActivePort) ? PORT_RADIUS + 3 : PORT_RADIUS, 0, 2 * Math.PI);
+                    ctx.fillStyle = isActivePort ? '#3b82f6' : (isHoveredPort ? '#bfdbfe' : '#fef08a');
+                    ctx.fill();
+                    ctx.lineWidth = 3;
+                    ctx.strokeStyle = isActivePort ? '#1e3a8a' : (isHoveredPort ? '#3b82f6' : '#eab308');
+                    ctx.stroke();
+                });
+            });
+
+            ctx.restore();
+
+            // Lanjut gambar frame berikutnya (Animasi loop)
+            requestAnimationFrame(renderCanvas);
+        }
+
+        // Fungsi Bantu Gambar Arah Panah yang Sesuai Arah Garis Lengkung
+        function drawArrowhead(ctx, x, y, startX, startY) {
+            // Kalkulasi sudut dari titik sebelum akhir (startY) menuju titik akhir (y)
+            const angle = Math.atan2(y - startY, x - startX);
+            const size = 12;
+            
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(-size, size/2);
+            ctx.lineTo(-size, -size/2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // Fungsi Bantu Pembungkus Teks
+        function wrapTextCanvas(ctx, text, x, y, maxWidth, lineHeight) {
+            const words = text.split(' ');
+            let line = '';
+            let lines = [];
+
+            for(let n = 0; n < words.length; n++) {
+                let testLine = line + words[n] + ' ';
+                let metrics = ctx.measureText(testLine);
+                let testWidth = metrics.width;
+                if (testWidth > maxWidth && n > 0) {
+                    lines.push(line);
+                    line = words[n] + ' ';
+                } else {
+                    line = testLine;
+                }
+            }
+            lines.push(line);
+            
+            // Hitung posisi Y agar teks terpusat secara vertikal di tengah kotak
+            let startY = y - ((lines.length - 1) * lineHeight) / 2;
+            
+            for(let i = 0; i < lines.length; i++) {
+                ctx.fillText(lines[i], x, startY + (i * lineHeight));
+            }
+        }
+
+        // --- SISTEM MODAL TEKS ---
+        function openTextModal(nodeId, currentText) {
+            editingNodeId = nodeId;
+            document.getElementById('text-input').value = currentText;
+            document.getElementById('text-modal').classList.remove('hidden');
+            document.getElementById('text-modal').classList.add('flex');
+            setTimeout(() => document.getElementById('text-input').focus(), 100);
+        }
+
+        function closeTextModal() {
+            editingNodeId = null;
+            document.getElementById('text-modal').classList.add('hidden');
+            document.getElementById('text-modal').classList.remove('flex');
+            canvas.focus();
+        }
+
+        function saveTextModal() {
+            if (editingNodeId) {
+                const newText = document.getElementById('text-input').value;
+                const state = appState[currentQuestionIndex];
+                const node = state.nodes.find(n => n.id === editingNodeId);
+                if (node) {
+                    node.text = newText;
+                }
+            }
+            closeTextModal();
+        }
+
+        // --- SISTEM PENILAIAN (Auto Grading) ---
+        function submitWork() {
+            let emptyCount = 0;
+            appState.forEach(state => { if (state.nodes.length === 0) emptyCount++; });
+
+            if (emptyCount === questions.length) {
+                showCustomConfirm(
+                    "Kertas Masih Kosong!", "Kamu belum membuat diagram satupun.", null, "fa-circle-xmark text-red-500", "Kembali"
+                );
+            } else if (emptyCount > 0) {
+                showCustomConfirm(
+                    "Ada Soal Kosong", `Masih ada ${emptyCount} soal yang kosong. Yakin kumpul sekarang?`,
+                    calculateAndShowScore, "fa-clipboard-question text-yellow-500", "Kumpulkan Sekarang"
+                );
+            } else {
+                calculateAndShowScore();
+            }
+        }
+
+        function calculateAndShowScore() {
+            let totalScore = 0;
+            
+            appState.forEach(state => {
+                let score = 0;
+                const nodes = state.nodes;
+                const edges = state.edges;
+
+                if (nodes.length > 0) {
+                    // Nilai Bangun
+                    const terminators = nodes.filter(n => n.type === 'terminator');
+                    if (terminators.length >= 1) score += 10; 
+                    if (terminators.length >= 2) score += 10; 
+
+                    const decisions = nodes.filter(n => n.type === 'decision');
+                    if (decisions.length >= 1) score += 30;
+
+                    // Nilai Kompleksitas
+                    if (nodes.length >= 5) score += 20;
+                    else if (nodes.length >= 3) score += 10;
+
+                    // Nilai Koneksi Garis
+                    if (edges.length >= nodes.length - 1 && nodes.length > 1) {
+                        score += 30;
+                    } else if (edges.length > 0) {
+                        score += 10;
+                    }
+                }
+                totalScore += score;
+            });
+
+            // Hitung rata-rata dari seluruh total pertanyaan (10 soal)
+            let finalScore = Math.round(totalScore / questions.length);
+            if(finalScore > 100) finalScore = 100;
+            
+            let message = ""; let emoji = "";
+            if (finalScore >= 80) { message = "Luar biasa! Logika flowchart-mu sangat tajam dan rapi!"; emoji = "fa-trophy text-yellow-400"; } 
+            else if (finalScore >= 60) { message = "Bagus! Jangan lupa logika arah panahnya ya."; emoji = "fa-thumbs-up text-blue-500"; } 
+            else { message = "Tetap semangat! Pelajari lagi garis awal dan akhirnya."; emoji = "fa-book-open text-emerald-500"; }
+
+            const resultOverlay = document.createElement('div');
+            resultOverlay.className = 'fixed inset-0 bg-slate-900/90 flex items-center justify-center p-4 z-[999999] backdrop-blur-sm';
+            resultOverlay.innerHTML = `
+                <div class="bg-white rounded-[2.5rem] p-10 max-w-md w-full text-center shadow-2xl transform scale-100 animate-[bounce_0.5s_ease-out]">
+                    <div class="w-32 h-32 mx-auto bg-slate-50 border-8 border-slate-100 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                        <i class="fa-solid ${emoji} text-7xl"></i>
+                    </div>
+                    <h2 class="text-[5rem] font-black text-slate-800 mb-2 leading-none">${finalScore}</h2>
+                    <h3 class="text-2xl font-black text-emerald-500 mb-4 uppercase tracking-widest">Nilai Akhir</h3>
+                    <p class="text-slate-600 mb-10 text-lg font-semibold">${message}</p>
+                    <button onclick="this.parentElement.parentElement.remove()" class="w-full py-5 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xl rounded-2xl shadow-lg transition-transform hover:scale-105">
+                        Tutup
+                    </button>
+                </div>
+            `;
+            document.body.appendChild(resultOverlay);
+        }
+    </script>
+</body>
+</html>
