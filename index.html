@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sumatif Flowchart Kelas 6 (HOTS & Optimized)</title>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -142,9 +145,24 @@
             </header>
 
             <!-- KANVAS AREA -->
-            <div id="canvas-wrapper" class="flex-1 min-h-0">
-                <!-- Panduan Melayang (Sembunyikan di HP/Landscape agar hemat layar) -->
+            <div id="canvas-wrapper" class="flex-1 min-h-0 relative">
+                
+                <!-- PANDUAN: Penutup div yang sebelumnya terhapus kini sudah saya perbaiki! -->
                 <div class="absolute top-4 right-4 z-40 bg-white/90 backdrop-blur-md px-4 py-3 rounded-xl border border-slate-200 shadow-lg text-xs font-semibold text-slate-700 hidden md:flex flex-col gap-2 max-w-[240px] pointer-events-none opacity-80 lg:opacity-100">
+                    <p class="flex items-center gap-2"><i class="fa-solid fa-hand text-blue-500 w-4"></i> Seret kertas untuk menggeser.</p>
+                    <p class="flex items-center gap-2"><i class="fa-solid fa-link text-emerald-500 w-4"></i> Tarik titik kuning ke bangun lain untuk sambung garis.</p>
+                    <p class="flex items-center gap-2"><i class="fa-solid fa-i-cursor text-purple-500 w-4"></i> Ketuk dua kali (Double-Tap) bangun untuk ubah teks.</p>
+                </div>
+                
+                <!-- Tombol Hapus/Reset -->
+                <div class="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 z-40 flex gap-2 sm:gap-3">
+                    <button onclick="promptClearCanvas()" class="px-3 py-2 sm:px-4 sm:py-3 bg-white text-slate-600 border border-slate-300 rounded-xl shadow-lg font-bold hover:bg-slate-50 flex items-center gap-2 transition-transform hover:scale-105 text-xs sm:text-sm">
+                        <i class="fa-solid fa-broom"></i> <span class="hidden sm:inline">Bersihkan</span>
+                    </button>
+                    <button onclick="deleteSelected()" id="btn-delete" class="px-3 py-2 sm:px-4 sm:py-3 bg-red-50 text-red-600 border border-red-200 rounded-xl shadow-lg font-bold hover:bg-red-100 items-center gap-2 transition-transform hover:scale-105 text-xs sm:text-sm hidden">
+                        <i class="fa-solid fa-trash"></i> Hapus
+                    </button>
+                </div>
 
                 <!-- CANVAS NATIVE HTML5 -->
                 <canvas id="flowCanvas" tabindex="0"></canvas>
