@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sumatif Flowchart Kelas 6 (Native Canvas HOTS)</title>
+    <title>Sumatif Flowchart Kelas 6 (HOTS & Optimized)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -16,18 +16,15 @@
             margin: 0;
             padding: 0;
             overflow: hidden; 
-            touch-action: none; /* Mencegah pull-to-refresh di HP */
+            touch-action: none; /* Mencegah zoom/scroll browser bawaan saat swipe layar */
         }
         
         #app-container {
             display: flex;
             height: 100vh;
             width: 100vw;
-            flex-direction: column;
-        }
-
-        @media (min-width: 1024px) {
-            #app-container { flex-direction: row; }
+            flex-direction: row; /* Default lurus untuk desktop */
+            position: relative;
         }
 
         #canvas-wrapper {
@@ -42,35 +39,47 @@
             cursor: grabbing;
         }
 
-        /* Ini adalah elemen Native HTML5 Canvas */
+        /* Elemen Native HTML5 Canvas Murni */
         #flowCanvas {
             position: absolute;
             top: 0;
             left: 0;
             outline: none;
-            /* Pola titik untuk efek buku tulis */
-            background-image: radial-gradient(#cbd5e1 1.5px, transparent 1.5px);
-            background-size: 24px 24px;
-            background-position: 0 0;
+            touch-action: none; /* Wajib untuk responsif di tablet */
+            /* Grid CSS Dihapus - Digambar ulang via JavaScript agar anti lag */
         }
 
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Utilitas untuk Sidebar Laci di Tablet/Mobile */
+        .drawer-open { transform: translateX(0) !important; }
+        .backdrop-open { display: block !important; opacity: 1 !important; pointer-events: auto !important; }
     </style>
 </head>
 <body>
 
     <div id="app-container">
+        
+        <!-- BACKDROP: Area gelap saat laci soal dibuka (Hanya muncul di Layar Kecil) -->
+        <div id="sidebar-backdrop" onclick="toggleSidebar()" class="fixed inset-0 bg-slate-900/50 z-40 hidden opacity-0 transition-opacity duration-300 lg:hidden pointer-events-none backdrop-blur-sm"></div>
+
         <!-- SIDEBAR SOAL -->
-        <aside class="w-full lg:w-80 bg-white border-r border-slate-200 flex flex-col flex-shrink-0 shadow-[4px_0_24px_rgba(0,0,0,0.05)] z-30 h-48 lg:h-full">
-            <div class="p-5 bg-emerald-500 text-white flex items-center gap-4 shadow-md">
-                <i class="fa-solid fa-graduation-cap text-4xl"></i>
-                <div>
-                    <h1 class="font-black text-xl leading-tight tracking-wide">Ujian Sumatif</h1>
-                    <p class="text-sm opacity-90 font-semibold">Flowchart Kelas 6 (HOTS)</p>
+        <aside id="sidebar" class="fixed lg:relative inset-y-0 left-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out w-80 sm:w-96 lg:w-80 bg-white border-r border-slate-200 flex flex-col flex-shrink-0 shadow-[4px_0_24px_rgba(0,0,0,0.1)] z-50 h-full">
+            <div class="p-5 bg-emerald-500 text-white flex justify-between items-center shadow-md">
+                <div class="flex items-center gap-4">
+                    <i class="fa-solid fa-graduation-cap text-4xl"></i>
+                    <div>
+                        <h1 class="font-black text-xl leading-tight tracking-wide">Ujian Sumatif</h1>
+                        <p class="text-sm opacity-90 font-semibold">Flowchart (HOTS)</p>
+                    </div>
                 </div>
+                <!-- Tombol tutup Sidebar (Hanya untuk Mobile/Tablet) -->
+                <button onclick="toggleSidebar()" class="lg:hidden text-white bg-emerald-600 hover:bg-emerald-700 w-10 h-10 rounded-full flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
             </div>
             
             <div class="flex-1 overflow-y-auto p-4 space-y-3" id="question-list">
@@ -85,16 +94,23 @@
         </aside>
 
         <!-- AREA UTAMA & TOOLBAR -->
-        <main class="flex-1 flex flex-col relative bg-slate-50">
-            <header class="bg-white border-b border-slate-200 p-4 shadow-sm z-20 flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center relative">
-                <div class="flex-1 max-w-2xl">
-                    <span class="inline-block px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-md mb-2 uppercase tracking-wider" id="q-badge">Soal 1</span>
-                    <p class="font-bold text-slate-700 text-sm leading-relaxed" id="q-text">Teks soal.</p>
+        <main class="flex-1 flex flex-col relative bg-slate-50 min-w-0">
+            <header class="bg-white border-b border-slate-200 p-4 shadow-sm z-20 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center relative">
+                <div class="flex-1 max-w-2xl flex items-start gap-3">
+                    <!-- Tombol Hamburger untuk Tablet/Mobile -->
+                    <button onclick="toggleSidebar()" class="lg:hidden p-3 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-xl flex items-center justify-center transition-colors shadow-sm mt-1">
+                        <i class="fa-solid fa-bars text-lg"></i>
+                    </button>
+                    <div>
+                        <span class="inline-block px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-md mb-2 uppercase tracking-wider shadow-sm" id="q-badge">Soal 1</span>
+                        <p class="font-bold text-slate-700 text-sm leading-relaxed" id="q-text">Teks soal.</p>
+                    </div>
                 </div>
 
-                <div class="flex flex-col items-center lg:items-end gap-2 w-full lg:w-auto bg-slate-50 p-2 rounded-xl border border-slate-200">
-                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest"><i class="fa-solid fa-shapes"></i> Tambah Bangun Ruang</div>
-                    <div class="flex gap-2">
+                <!-- Palette Tools: Dibungkus wrapper overflow agar bisa discroll jika HP terlalu kecil -->
+                <div class="w-full md:w-auto bg-slate-50 p-2 rounded-xl border border-slate-200 flex flex-col items-center md:items-end gap-2 shrink-0 overflow-x-auto">
+                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 whitespace-nowrap"><i class="fa-solid fa-shapes"></i> Tambah Bangun Ruang</div>
+                    <div class="flex gap-2 min-w-max pb-1">
                         <button onclick="addNode('terminator')" class="p-2 bg-rose-100 text-rose-700 hover:bg-rose-200 rounded-xl w-14 h-12 flex items-center justify-center shadow-sm transition-transform hover:scale-105" title="Mulai / Selesai">
                             <div class="w-8 h-4 border-2 border-rose-500 rounded-full"></div>
                         </button>
@@ -113,11 +129,11 @@
 
             <!-- KANVAS AREA -->
             <div id="canvas-wrapper">
-                <!-- Panduan -->
-                <div class="absolute top-4 right-4 z-40 bg-white/90 backdrop-blur-md px-4 py-3 rounded-xl border border-slate-200 shadow-lg text-xs font-semibold text-slate-700 flex flex-col gap-2 max-w-[240px] pointer-events-none">
-                    <p class="flex items-center gap-2"><i class="fa-solid fa-hand text-blue-500 w-4 text-center"></i> Seret kertas untuk menggeser pandangan.</p>
-                    <p class="flex items-center gap-2"><i class="fa-solid fa-link text-emerald-500 w-4 text-center"></i> Klik 2 titik kuning untuk sambung garis.</p>
-                    <p class="flex items-center gap-2"><i class="fa-solid fa-i-cursor text-purple-500 w-4 text-center"></i> Klik ganda (Double-click) pada bangun untuk mengubah teksnya.</p>
+                <!-- Panduan Melayang -->
+                <div class="absolute top-4 right-4 z-40 bg-white/90 backdrop-blur-md px-4 py-3 rounded-xl border border-slate-200 shadow-lg text-xs font-semibold text-slate-700 flex flex-col gap-2 max-w-[240px] pointer-events-none opacity-80 lg:opacity-100">
+                    <p class="flex items-center gap-2"><i class="fa-solid fa-hand text-blue-500 w-4 text-center"></i> Seret kertas untuk geser.</p>
+                    <p class="flex items-center gap-2"><i class="fa-solid fa-link text-emerald-500 w-4 text-center"></i> Klik 2 titik untuk sambung.</p>
+                    <p class="flex items-center gap-2"><i class="fa-solid fa-i-cursor text-purple-500 w-4 text-center"></i> Ketuk 2x bangun untuk ngetik.</p>
                 </div>
                 
                 <!-- Tombol Hapus/Reset -->
@@ -164,31 +180,31 @@
     </div>
 
     <script>
-        // SOAL HOTS (Higher Order Thinking Skills)
+        // 10 SOAL HOTS (Tingkat Tinggi)
         const questions = [
-            { id: 1, title: "Soal 1: Mesin Minuman (Validasi Berlapis)", text: "Andi beli jus Rp 12.000. Masukkan uang. Apakah uang >= 12.000? Jika TIDAK (Bawah): 'Uang Kurang' lalu kembali ke atas. Jika YA (Kanan): Apakah uang > 12.000? Jika YA (Kanan): 'Keluarkan Jus & Kembalian'. Jika TIDAK (Bawah): 'Keluarkan Jus'. Selesai." },
-            { id: 2, title: "Soal 2: Promo Ganda Supermarket (Nested)", text: "Input total belanja. Apakah belanja > Rp 200.000? Jika YA (Kanan): Dapat Voucher. Jika TIDAK (Bawah): Tidak dapat. Gabungkan alur. Apakah bayar pakai E-Wallet? Jika YA (Kanan): Diskon 10%. Jika TIDAK (Bawah): Harga Normal. Tampilkan Total dan Selesai." },
-            { id: 3, title: "Soal 3: Keamanan Sandi (Limit Looping)", text: "Masukkan Sandi. Apakah Sandi Benar? Jika YA (Kanan): 'Akses Diberikan' lalu Selesai. Jika TIDAK (Bawah): Tambah 1 Kesalahan. Apakah Kesalahan = 3? Jika TIDAK (Bawah): Kembali ke Input Sandi. Jika YA (Kanan): 'Akun Diblokir' lalu Selesai." },
-            { id: 4, title: "Soal 4: Sensor Lampu Cerdas (Multi-threshold)", text: "Baca sensor jumlah mobil. Apakah mobil > 50? Jika YA (Kanan): Lampu Hijau 90 detik. Jika TIDAK (Bawah): Apakah mobil > 20? Jika YA (Kanan): Lampu Hijau 45 detik. Jika TIDAK (Bawah): Lampu Hijau 15 detik. Tampilkan durasi, lalu Selesai." },
-            { id: 5, title: "Soal 5: Aturan Ketat Perpus", text: "Ingin pinjam buku. Punya Kartu Anggota? Jika TIDAK (Bawah): 'Buat Kartu Dulu' (Selesai). Jika YA (Kanan): Sedang meminjam > 2 buku? Jika YA (Kanan): 'Batas Pinjam Penuh' (Selesai). Jika TIDAK (Bawah): 'Buku Berhasil Dipinjam' lalu Selesai." },
-            { id: 6, title: "Soal 6: Tong Sampah AI (Kategorisasi)", text: "Deteksi sampah. Terbuat dari plastik/kaca? Jika YA (Kanan): 'Tong Anorganik'. Jika TIDAK (Bawah): Apakah sisa makanan/daun? Jika YA (Kanan): 'Tong Kompos'. Jika TIDAK (Bawah): 'Tong Residu'. Selesai." },
-            { id: 7, title: "Soal 7: Robot Siram Tanaman (Sensor Loop)", text: "Cek kelembapan pot. Apakah tanah kering (< 30%)? Jika TIDAK (Bawah): 'Tanaman Aman', lalu Selesai. Jika YA (Kanan): Nyalakan Pompa 5 detik. Tunggu meresap, lalu tarik garis kembali ke atas untuk Cek kelembapan lagi (Looping)." },
-            { id: 8, title: "Soal 8: Seleksi Tim Cerdas Cermat", text: "Input Nilai. Rata-rata >= 85? Jika TIDAK (Bawah): 'Belum Lolos' (Selesai). Jika YA (Kanan): Punya riwayat juara lomba? Jika YA (Kanan): 'Masuk Tim Inti'. Jika TIDAK (Bawah): 'Masuk Tim Cadangan'. Selesai." },
-            { id: 9, title: "Soal 9: Mesin Pembuat Kue", text: "Aduk adonan. Apakah sudah kalis? Jika YA (Kanan): Cetak adonan, lalu Selesai. Jika TIDAK (Bawah): Apakah adonan terlalu keras? Jika YA (Kanan): Tambah sedikit air. Jika TIDAK (Bawah): Biarkan. Tarik garis kembali ke atas untuk Aduk adonan lagi." },
-            { id: 10, title: "Soal 10: Petualangan RPG (Boss Fight)", text: "Serang Monster. HP Monster berkurang. Apakah HP Monster <= 0? Jika YA (Kanan): 'Level Cleared' (Selesai). Jika TIDAK (Bawah): Monster membalas! Apakah HP Karakter <= 0? Jika YA (Kanan): 'Game Over' (Selesai). Jika TIDAK (Bawah): Kembali ke atas untuk Serang Monster lagi." }
+            { id: 1, title: "Soal 1: Mesin Penjual Tiket KRL (Validasi)", text: "Andi beli tiket Rp 5.000. Masukkan uang. Apakah uang >= 5000? Jika TIDAK (Bawah): 'Uang Kurang', tarik panah kembali ke atas. Jika YA (Kanan): Apakah uang > 5000? Jika YA (Kanan): 'Tiket Keluar & Kembalian'. Jika TIDAK (Bawah): 'Tiket Keluar'. Selesai." },
+            { id: 2, title: "Soal 2: Sistem Parkir Mall (Tarif Progresif)", text: "Input jam parkir. Apakah jam <= 1? Jika YA (Kanan): Tarif Rp 4.000. Jika TIDAK (Bawah): Tarif = 4000 + ((jam - 1) * 2000). Apakah parkir valet? Jika YA (Kanan): Tambah 25.000. Jika TIDAK (Bawah): Biaya Normal. Tampilkan Total, Selesai." },
+            { id: 3, title: "Soal 3: Ganjil atau Genap? (Modulus)", text: "Input sebuah bilangan bulat. Bagi bilangan tersebut dengan angka 2. Apakah sisa baginya adalah 0 (Habis dibagi)? Jika YA (Kanan): Tampilkan 'Bilangan Genap'. Jika TIDAK (Bawah): Tampilkan 'Bilangan Ganjil'. Lalu Selesai." },
+            { id: 4, title: "Soal 4: Sensor Lampu Jalan (Multi-Syarat)", text: "Baca sensor cahaya matahari. Apakah cahaya < 30%? Jika TIDAK (Bawah): 'Lampu Mati' (Selesai). Jika YA (Kanan): Apakah ada orang lewat? Jika YA (Kanan): 'Lampu Terang 100%'. Jika TIDAK (Bawah): 'Lampu Redup 30%'. Selesai." },
+            { id: 5, title: "Soal 5: Mesin Kasir Diskon Bersarang", text: "Total Belanja = X. Apakah X >= Rp 250.000? Jika TIDAK (Bawah): Diskon 0%. Jika YA (Kanan): Punya Kartu VIP? Jika YA (Kanan): Diskon 20%. Jika TIDAK (Bawah): Diskon 10%. Hitung bayar = X - Diskon. Tampilkan struk, Selesai." },
+            { id: 6, title: "Soal 6: Pembuat Kopi Otomatis (Cek Stok)", text: "Pilih menu Espresso. Cek tangki air. Apakah air cukup? Jika TIDAK (Bawah): 'Isi Air', KEMBALI ke cek tangki. Jika YA (Kanan): Cek Biji Kopi. Cukup? Jika TIDAK (Bawah): 'Isi Biji', KEMBALI ke cek biji. Jika YA (Kanan): Seduh Kopi. Selesai." },
+            { id: 7, title: "Soal 7: Pompa Kebun Cerdas (Loop Sensor)", text: "Cek sensor tanah. Kering (<20%)? Jika TIDAK (Bawah): Tunggu 1 Jam, KEMBALI ke cek sensor. Jika YA (Kanan): Nyalakan Pompa 10 Menit. Air mengalir. Setelah itu, matikan pompa dan KEMBALI ke cek sensor (Loop tiada henti)." },
+            { id: 8, title: "Soal 8: Login Ujian Online (Limit Blokir)", text: "Masukkan Username & Password. Benar? Jika YA (Kanan): 'Masuk Sistem' (Selesai). Jika TIDAK (Bawah): Tambah 1 peringatan. Apakah peringatan == 3? Jika TIDAK (Bawah): KEMBALI ke Masukkan Password. Jika YA (Kanan): 'Akun Terkunci', lapor admin. Selesai." },
+            { id: 9, title: "Soal 9: Evaluasi Siswa Lulus/Remedial", text: "Nilai Ujian U. Apakah U >= 75? Jika YA (Kanan): 'Lulus'. Apakah U == 100? Jika YA (Kanan): 'Dapat Medali Emas', Jika TIDAK (Bawah): 'Biasa'. Jika U < 75 (Bawah): 'Remedial'. Ikut ujian ulang, lalu KEMBALI ke cek Nilai Ujian U. Selesai." },
+            { id: 10, title: "Soal 10: Sisa Nyawa Game Over (RPG)", text: "Monster memukulmu! Nyawa - 20. Apakah Nyawa <= 0? Jika TIDAK (Bawah): Punya Potion? Jika YA (Kanan): Nyawa + 50, KEMBALI lawan monster. Jika TIDAK (Bawah): KEMBALI lawan monster. Jika Nyawa <= 0 (Kanan): Tampilkan 'Game Over', Selesai." }
         ];
 
         let currentQuestionIndex = 0;
         let appState = Array.from({ length: questions.length }, () => ({ nodes: [], edges: [] }));
 
-        // KONFIGURASI NATIVE CANVAS
+        // Konfigurasi Canvas
         const canvas = document.getElementById('flowCanvas');
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { alpha: false }); // alpha false optimal performa karena bg utuh
         const wrapper = document.getElementById('canvas-wrapper');
         
         let camera = { x: 0, y: 0 };
         
-        // VARIABEL INTERAKSI CANVAS
+        // --- Interaksi ---
         let selectedNodeId = null;
         let selectedEdgeId = null;
         let hoveredPort = null; 
@@ -202,15 +218,14 @@
         let worldMousePos = { x: 0, y: 0 };
         
         let editingNodeId = null; 
-
-        // PERBAIKAN PERFORMA & TOUCH (iPad/Mobile)
         let renderPending = false;
-        let lastTapTime = 0;
+        let lastTapTime = 0; // Untuk deteksi Double Tap di iPad
 
+        // Ukuran
         const NODE_W = 160;
         const NODE_H = 80;
         const PORT_RADIUS = 8;
-        const HIT_PADDING = 20;
+        const HIT_PADDING = 25; // Hitbox klik dibuat agak lebar untuk jari tablet
 
         window.onload = () => {
             resizeCanvas();
@@ -220,9 +235,8 @@
             selectQuestion(0);
             
             canvas.addEventListener('pointerdown', handlePointerDown);
-            window.addEventListener('pointermove', handlePointerMove);
+            window.addEventListener('pointermove', handlePointerMove, {passive: true});
             window.addEventListener('pointerup', handlePointerUp);
-            // Hapus dblclick bawaan karena pakai custom tap untuk iPad/HP
             
             canvas.addEventListener('keydown', (e) => {
                 if (e.key === 'Delete' || e.key === 'Backspace') {
@@ -230,8 +244,19 @@
                 }
             });
             
-            requestRender(); // Render pertama kali
+            requestRender(); 
         };
+
+        // Mengatur Toggle Sidebar HP/Tablet
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            sidebar.classList.toggle('transform');
+            sidebar.classList.toggle('-translate-x-full');
+            backdrop.classList.toggle('hidden');
+            backdrop.classList.toggle('opacity-0');
+            backdrop.classList.toggle('backdrop-open');
+        }
 
         // SISTEM ANTI-LAG (On-Demand Rendering)
         function requestRender() {
@@ -265,7 +290,11 @@
                     ? 'border-emerald-500 bg-emerald-50 shadow-md' 
                     : 'border-transparent bg-slate-50 hover:bg-slate-100 border-slate-200'
                 }`;
-                btn.onclick = () => selectQuestion(index);
+                btn.onclick = () => {
+                    selectQuestion(index);
+                    // Tutup sidebar jika di HP setelah milih soal
+                    if(window.innerWidth < 1024) toggleSidebar(); 
+                };
                 btn.innerHTML = `
                     <span class="font-black text-sm ${index === currentQuestionIndex ? 'text-emerald-700' : 'text-slate-700'}">${q.title}</span>
                     <span class="text-xs line-clamp-3 leading-relaxed text-slate-500 font-semibold">${q.text}</span>
@@ -284,12 +313,7 @@
             document.getElementById('q-text').innerText = questions[index].text;
             
             camera = { x: 0, y: 0 };
-            updateBackgroundPan();
             requestRender();
-        }
-
-        function updateBackgroundPan() {
-            canvas.style.backgroundPosition = `${camera.x}px ${camera.y}px`;
         }
 
         function showCustomConfirm(title, message, onConfirm, iconClass, confirmText) {
@@ -321,6 +345,7 @@
 
         function addNode(type) {
             const rect = wrapper.getBoundingClientRect();
+            // Tengah layar persis
             const centerX = (rect.width / 2) - camera.x - (NODE_W / 2);
             const centerY = (rect.height / 2) - camera.y - (NODE_H / 2);
 
@@ -329,7 +354,7 @@
                 type: type,
                 x: centerX,
                 y: centerY,
-                text: type === 'terminator' ? 'Mulai / Selesai' : type === 'decision' ? 'Apakah..?' : 'Proses Data'
+                text: type === 'terminator' ? 'Mulai/Selesai' : type === 'decision' ? 'Apakah..?' : 'Proses Data'
             };
             
             appState[currentQuestionIndex].nodes.push(node);
@@ -415,19 +440,18 @@
 
             // DETEKSI DOUBLE TAP KHUSUS IPAD/MOBILE
             const now = Date.now();
-            if (now - lastTapTime < 300) { // Jika diketuk 2x dalam jeda kurang dari 300ms
+            if (now - lastTapTime < 300) { 
                 const hitNode = checkHitNode(wx, wy);
                 if (hitNode) {
                     openTextModal(hitNode.id, hitNode.text);
-                    lastTapTime = 0; // Reset
+                    lastTapTime = 0;
                     return; 
                 }
             }
             lastTapTime = now;
-            
             lastMousePos = { x: screenX, y: screenY };
 
-            // 1. Cek Klik Titik Konektor (Port)
+            // 1. Cek Klik Titik Konektor
             const hitPort = checkHitPort(wx, wy);
             if (hitPort) {
                 if (!connectingPort) {
@@ -445,14 +469,14 @@
                 return;
             }
 
-            // Batal nyambung kalau klik sembarangan
+            // Batalkan nyambung kalau salah klik area
             if (connectingPort) {
                 connectingPort = null;
                 requestRender();
                 return;
             }
 
-            // 2. Cek Klik Bangun (Node)
+            // 2. Cek Klik Bangun
             const hitNode = checkHitNode(wx, wy);
             if (hitNode) {
                 selectedNodeId = hitNode.id;
@@ -464,7 +488,7 @@
                 return;
             }
 
-            // 3. Cek Klik Garis (Edge)
+            // 3. Cek Klik Garis
             const hitEdge = checkHitEdge(wx, wy);
             if (hitEdge) {
                 selectedEdgeId = hitEdge;
@@ -474,7 +498,7 @@
                 return;
             }
 
-            // 4. Klik Kertas Kosong (Panning)
+            // 4. Klik Kertas Kosong (Untuk Geser/Panning)
             selectedNodeId = null;
             selectedEdgeId = null;
             isPanningCanvas = true;
@@ -496,12 +520,12 @@
                 const hPort = checkHitPort(worldMousePos.x, worldMousePos.y);
                 const hNode = checkHitNode(worldMousePos.x, worldMousePos.y);
                 
-                // Cek jika status sentuh (hover) berubah
-                if (hoveredPort !== hPort || hoveredNode !== (hNode ? hNode.id : null)) {
+                // Ganti render hanya saat transisi kursor berubah (Optimasi Anti Lag)
+                if (hoveredPort !== (hPort ? hPort.port : null) || hoveredNode !== (hNode ? hNode.id : null)) {
                     shouldRender = true; 
                 }
 
-                hoveredPort = hPort;
+                hoveredPort = hPort ? hPort.port : null;
                 hoveredNode = hNode ? hNode.id : null;
                 
                 if (hPort) wrapper.style.cursor = 'crosshair';
@@ -510,12 +534,9 @@
             }
 
             if (isPanningCanvas) {
-                const dx = screenX - lastMousePos.x;
-                const dy = screenY - lastMousePos.y;
-                camera.x += dx;
-                camera.y += dy;
+                camera.x += (screenX - lastMousePos.x);
+                camera.y += (screenY - lastMousePos.y);
                 lastMousePos = { x: screenX, y: screenY };
-                updateBackgroundPan();
                 shouldRender = true;
             } 
             else if (isDraggingNode && selectedNodeId) {
@@ -528,18 +549,14 @@
                 }
             }
             else if (connectingPort) {
-                shouldRender = true; // Supaya garis putus-putus mengikuti kursor
+                shouldRender = true; // Garis putus-putus
             }
 
             if (shouldRender) requestRender();
         }
 
         function handlePointerUp(e) {
-            if (isDraggingNode) {
-                isDraggingNode = false;
-                requestRender();
-            }
-            
+            if (isDraggingNode) { isDraggingNode = false; requestRender(); }
             if (isPanningCanvas) {
                 isPanningCanvas = false;
                 wrapper.style.cursor = 'grab';
@@ -579,8 +596,13 @@
 
         function renderCanvas() {
             const rect = wrapper.getBoundingClientRect();
-            ctx.clearRect(0, 0, canvas.width, canvas.height); 
-            
+            // Latar abu-abu dasar yang menghapus frame sebelumnya
+            ctx.fillStyle = '#f1f5f9';
+            ctx.fillRect(0, 0, canvas.width, canvas.height); 
+
+            // 0. GAMBAR GRID NATIVE (MENGHILANGKAN LAG 100%)
+            drawGrid();
+
             ctx.save();
             ctx.translate(camera.x, camera.y); 
 
@@ -608,17 +630,15 @@
 
                 drawArrowhead(ctx, p2.x, p2.y, p2.x, p2.y - curve);
 
-                // TEKS TRUE/FALSE HOTS LOGIC
+                // TEKS TRUE/FALSE KHUSUS DECISION
                 if (fromNode.type === 'decision') {
-                    ctx.font = '900 15px Nunito';
+                    ctx.font = '900 14px Nunito';
                     if (edge.fromPort === 'right') {
                         ctx.fillStyle = '#16a34a'; 
-                        // Teks tepat di atas mulainya panah kanan
-                        ctx.fillText('YA (TRUE)', p1.x + 45, p1.y - 12);
+                        ctx.fillText('YA (TRUE)', p1.x + 40, p1.y - 12);
                     } else if (edge.fromPort === 'bottom') {
                         ctx.fillStyle = '#dc2626'; 
-                        // Teks tepat di samping mulainya panah bawah
-                        ctx.fillText('TIDAK (FALSE)', p1.x + 60, p1.y + 25);
+                        ctx.fillText('TIDAK (FALSE)', p1.x + 55, p1.y + 25);
                     }
                 }
             });
@@ -652,8 +672,8 @@
                 let w = NODE_W;
                 let h = node.type === 'decision' ? 100 : NODE_H;
 
-                ctx.shadowColor = isSelected ? 'rgba(59, 130, 246, 0.5)' : 'rgba(0, 0, 0, 0.1)';
-                ctx.shadowBlur = isSelected ? 15 : 10;
+                ctx.shadowColor = isSelected ? 'rgba(59, 130, 246, 0.4)' : 'rgba(0, 0, 0, 0.1)';
+                ctx.shadowBlur = isSelected ? 12 : 8;
                 ctx.shadowOffsetY = 4;
 
                 ctx.beginPath();
@@ -694,11 +714,11 @@
                 const ports = ['top', 'right', 'bottom', 'left'];
                 ports.forEach(p => {
                     const pos = getPortPos(node, p);
-                    const isHoveredPort = (hoveredPort && hoveredPort.nodeId === node.id && hoveredPort.port === p);
+                    const isHoveredPort = (hoveredPort === p && hoveredNode === node.id);
                     const isActivePort = (connectingPort && connectingPort.nodeId === node.id && connectingPort.port === p);
                     
                     ctx.beginPath();
-                    ctx.arc(pos.x, pos.y, (isHoveredPort || isActivePort) ? PORT_RADIUS + 4 : PORT_RADIUS, 0, 2 * Math.PI);
+                    ctx.arc(pos.x, pos.y, (isHoveredPort || isActivePort) ? PORT_RADIUS + 3 : PORT_RADIUS, 0, 2 * Math.PI);
                     ctx.fillStyle = isActivePort ? '#3b82f6' : (isHoveredPort ? '#bfdbfe' : '#fef08a');
                     ctx.fill();
                     ctx.lineWidth = 3;
@@ -708,7 +728,30 @@
             });
 
             ctx.restore();
-            // Penghapusan requestAnimationFrame agar tidak looping paksa, menghilangkan LAG 100%
+        }
+
+        function drawGrid() {
+            // Algoritma Native Fast Dot Grid (Ratusan kali lebih kencang dari CSS Background)
+            const dpr = window.devicePixelRatio || 1;
+            const s = 24; // Spasi titik 24px
+            const dotSize = 1.5;
+            
+            // Mencari titik mulai berdasarkan geseran kamera
+            const startX = (camera.x % s) - s;
+            const startY = (camera.y % s) - s;
+            
+            const w = wrapper.clientWidth;
+            const h = wrapper.clientHeight;
+
+            ctx.fillStyle = '#cbd5e1';
+            ctx.beginPath();
+            
+            for (let x = startX; x < w + s; x += s) {
+                for (let y = startY; y < h + s; y += s) {
+                    ctx.rect(x, y, dotSize, dotSize); // Pakai rect jauh lebih kencang dari arc lingkaran
+                }
+            }
+            ctx.fill();
         }
 
         function drawArrowhead(ctx, x, y, startX, startY) {
@@ -752,7 +795,6 @@
             }
         }
 
-        // --- SISTEM MODAL TEKS ---
         function openTextModal(nodeId, currentText) {
             editingNodeId = nodeId;
             document.getElementById('text-input').value = currentText;
@@ -775,25 +817,40 @@
                 const node = state.nodes.find(n => n.id === editingNodeId);
                 if (node) {
                     node.text = newText;
-                    requestRender(); // Render ualng saat teks disave
+                    requestRender();
                 }
             }
             closeTextModal();
         }
 
-        // --- SISTEM PENILAIAN (Auto Grading) ---
+        function promptClearCanvas() {
+            showCustomConfirm(
+                "Bersihkan Kanvas?", "Yakin mau hapus semua bentuk di soal ini?", 
+                () => {
+                    appState[currentQuestionIndex].nodes = [];
+                    appState[currentQuestionIndex].edges = [];
+                    selectedNodeId = null;
+                    selectedEdgeId = null;
+                    updateUIVisibility();
+                    requestRender();
+                }, 
+                "fa-broom text-red-500", "Hapus"
+            );
+        }
+
+        // SISTEM PENILAIAN OTOMATIS (Auto Grading untuk 10 Soal)
         function submitWork() {
             let emptyCount = 0;
             appState.forEach(state => { if (state.nodes.length === 0) emptyCount++; });
 
             if (emptyCount === questions.length) {
                 showCustomConfirm(
-                    "Kertas Masih Kosong!", "Kamu belum membuat diagram satupun.", null, "fa-circle-xmark text-red-500", "Kembali"
+                    "Kertas Kosong!", "Kamu belum membuat diagram satupun.", null, "fa-circle-xmark text-red-500", "Kembali"
                 );
             } else if (emptyCount > 0) {
                 showCustomConfirm(
                     "Ada Soal Kosong", `Masih ada ${emptyCount} soal yang kosong. Yakin kumpul sekarang?`,
-                    calculateAndShowScore, "fa-clipboard-question text-yellow-500", "Kumpulkan Sekarang"
+                    calculateAndShowScore, "fa-clipboard-question text-yellow-500", "Kumpulkan"
                 );
             } else {
                 calculateAndShowScore();
@@ -809,16 +866,20 @@
                 const edges = state.edges;
 
                 if (nodes.length > 0) {
+                    // Poin Komponen Dasar
                     const terminators = nodes.filter(n => n.type === 'terminator');
                     if (terminators.length >= 1) score += 10; 
                     if (terminators.length >= 2) score += 10; 
 
+                    // Poin Paham Logika Percabangan
                     const decisions = nodes.filter(n => n.type === 'decision');
                     if (decisions.length >= 1) score += 30;
 
+                    // Poin Kompleksitas Bentuk
                     if (nodes.length >= 5) score += 20;
                     else if (nodes.length >= 3) score += 10;
 
+                    // Poin Hubungan Alur (Panah)
                     if (edges.length >= nodes.length - 1 && nodes.length > 1) {
                         score += 30;
                     } else if (edges.length > 0) {
@@ -828,7 +889,7 @@
                 totalScore += score;
             });
 
-            // Pembagian dinamis berdasarkan jumlah pertanyaan (sekarang 10)
+            // Pembagi Dinamis sesuai jumlah soal yang ada (sekarang 10)
             let finalScore = Math.round(totalScore / questions.length);
             if(finalScore > 100) finalScore = 100;
             
