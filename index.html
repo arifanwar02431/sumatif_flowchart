@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Sumatif Flowchart Kelas 6 (Native Canvas)</title>
+    <title>Sumatif Flowchart Kelas 6 (Native Canvas HOTS)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -69,7 +69,7 @@
                 <i class="fa-solid fa-graduation-cap text-4xl"></i>
                 <div>
                     <h1 class="font-black text-xl leading-tight tracking-wide">Ujian Sumatif</h1>
-                    <p class="text-sm opacity-90 font-semibold">Flowchart Kelas 6</p>
+                    <p class="text-sm opacity-90 font-semibold">Flowchart Kelas 6 (HOTS)</p>
                 </div>
             </div>
             
@@ -164,21 +164,21 @@
     </div>
 
     <script>
+        // SOAL HOTS (Higher Order Thinking Skills)
         const questions = [
-            { id: 1, title: "Soal 1: Beli Es Krim", text: "Andi ingin beli es krim Rp 10.000. Masukkan uang. Apakah uang >= 10.000? Jika YA (Tarik kanan): 'Makan es krim' lalu selesai. Jika TIDAK (Tarik bawah): 'Uang kurang', lalu KEMBALI tarik garis ke atas meminta uang lagi." },
-            { id: 2, title: "Soal 2: Diskon Supermarket", text: "Input total belanja. Apakah belanja > Rp 100.000? Jika YA (Kanan), hitung Diskon 10%. Jika TIDAK (Bawah), Diskon 0. Lalu gabungkan alur, apakah punya Kartu Member? Jika YA (Kanan), tambah diskon. Tampilkan Total Bayar dan selesai." },
-            { id: 3, title: "Soal 3: Mesin ATM", text: "Input PIN. Apakah PIN benar? Jika YA (Kanan): 'Menu ATM' lalu Selesai. Jika TIDAK (Bawah): Apakah salah 3 kali? Jika TIDAK (Bawah), tarik garis kembali ke Input PIN. Jika YA (Kanan), 'Kartu Diblokir' lalu Selesai." },
-            { id: 4, title: "Soal 4: Lampu Lalu Lintas", text: "Baca sensor jumlah mobil. Jika mobil > 20 (Kanan), Set Hijau = 60 detik. Jika mobil <= 20 (Bawah), Set Hijau = 30 detik. Setelah durasi ditentukan, tampilkan 'Lampu Hijau Menyala' lalu selesai." },
-            { id: 5, title: "Soal 5: Pinjam Buku", text: "Siswa ingin meminjam buku. Bawa Kartu Perpus? Jika TIDAK (Bawah): 'Ditolak'. Jika YA (Kanan): Punya denda? Jika YA (Kanan): 'Bayar denda' lalu 'Ditolak'. Jika TIDAK (Bawah): 'Buku dipinjam' lalu selesai." },
-            { id: 6, title: "Soal 6: Genap atau Ganjil", text: "Input sebuah angka. Apakah angka habis dibagi 2? Jika YA (Kanan): Tampilkan 'Angka Genap'. Jika TIDAK (Bawah): Tampilkan 'Angka Ganjil'. Gabungkan alur, lalu selesai." },
-            { id: 7, title: "Soal 7: Alarm Pagi (Looping)", text: "Bunyikan Alarm. Apakah sudah bangun? Jika TIDAK (Bawah): Tunggu 5 menit, lalu tarik garis KEMBALI ke atas (Bunyikan Alarm lagi). Jika YA (Kanan): Matikan alarm, lalu selesai." },
-            { id: 8, title: "Soal 8: Kelulusan Siswa", text: "Input Nilai Ujian. Apakah Nilai >= 75? Jika YA (Kanan): 'LULUS'. Jika TIDAK (Bawah): 'REMEDIAL'. Gabungkan alur garisnya, 'Terima Rapor' lalu Selesai." },
-            { id: 9, title: "Soal 9: Bikin Teh Manis", text: "Tuang air teh dan gula, lalu aduk. Apakah sudah manis? Jika TIDAK (Bawah): Tambah gula lagi, tarik garis kembali ke atas (aduk lagi). Jika YA (Kanan): Teh siap disajikan, lalu selesai." },
-            { id: 10, title: "Soal 10: Bermain Game", text: "Karakter bermain. Kena rintangan? Jika YA (Kanan): Nyawa berkurang 1. Apakah nyawa == 0? Jika YA (Kanan): Game Over. Jika TIDAK (Bawah): Ulangi level (Tarik ke atas). Jika TIDAK kena rintangan (Bawah dari awal): Lanjut main." }
+            { id: 1, title: "Soal 1: Mesin Minuman (Validasi Berlapis)", text: "Andi beli jus Rp 12.000. Masukkan uang. Apakah uang >= 12.000? Jika TIDAK (Bawah): 'Uang Kurang' lalu kembali ke atas. Jika YA (Kanan): Apakah uang > 12.000? Jika YA (Kanan): 'Keluarkan Jus & Kembalian'. Jika TIDAK (Bawah): 'Keluarkan Jus'. Selesai." },
+            { id: 2, title: "Soal 2: Promo Ganda Supermarket (Nested)", text: "Input total belanja. Apakah belanja > Rp 200.000? Jika YA (Kanan): Dapat Voucher. Jika TIDAK (Bawah): Tidak dapat. Gabungkan alur. Apakah bayar pakai E-Wallet? Jika YA (Kanan): Diskon 10%. Jika TIDAK (Bawah): Harga Normal. Tampilkan Total dan Selesai." },
+            { id: 3, title: "Soal 3: Keamanan Sandi (Limit Looping)", text: "Masukkan Sandi. Apakah Sandi Benar? Jika YA (Kanan): 'Akses Diberikan' lalu Selesai. Jika TIDAK (Bawah): Tambah 1 Kesalahan. Apakah Kesalahan = 3? Jika TIDAK (Bawah): Kembali ke Input Sandi. Jika YA (Kanan): 'Akun Diblokir' lalu Selesai." },
+            { id: 4, title: "Soal 4: Sensor Lampu Cerdas (Multi-threshold)", text: "Baca sensor jumlah mobil. Apakah mobil > 50? Jika YA (Kanan): Lampu Hijau 90 detik. Jika TIDAK (Bawah): Apakah mobil > 20? Jika YA (Kanan): Lampu Hijau 45 detik. Jika TIDAK (Bawah): Lampu Hijau 15 detik. Tampilkan durasi, lalu Selesai." },
+            { id: 5, title: "Soal 5: Aturan Ketat Perpus", text: "Ingin pinjam buku. Punya Kartu Anggota? Jika TIDAK (Bawah): 'Buat Kartu Dulu' (Selesai). Jika YA (Kanan): Sedang meminjam > 2 buku? Jika YA (Kanan): 'Batas Pinjam Penuh' (Selesai). Jika TIDAK (Bawah): 'Buku Berhasil Dipinjam' lalu Selesai." },
+            { id: 6, title: "Soal 6: Tong Sampah AI (Kategorisasi)", text: "Deteksi sampah. Terbuat dari plastik/kaca? Jika YA (Kanan): 'Tong Anorganik'. Jika TIDAK (Bawah): Apakah sisa makanan/daun? Jika YA (Kanan): 'Tong Kompos'. Jika TIDAK (Bawah): 'Tong Residu'. Selesai." },
+            { id: 7, title: "Soal 7: Robot Siram Tanaman (Sensor Loop)", text: "Cek kelembapan pot. Apakah tanah kering (< 30%)? Jika TIDAK (Bawah): 'Tanaman Aman', lalu Selesai. Jika YA (Kanan): Nyalakan Pompa 5 detik. Tunggu meresap, lalu tarik garis kembali ke atas untuk Cek kelembapan lagi (Looping)." },
+            { id: 8, title: "Soal 8: Seleksi Tim Cerdas Cermat", text: "Input Nilai. Rata-rata >= 85? Jika TIDAK (Bawah): 'Belum Lolos' (Selesai). Jika YA (Kanan): Punya riwayat juara lomba? Jika YA (Kanan): 'Masuk Tim Inti'. Jika TIDAK (Bawah): 'Masuk Tim Cadangan'. Selesai." },
+            { id: 9, title: "Soal 9: Mesin Pembuat Kue", text: "Aduk adonan. Apakah sudah kalis? Jika YA (Kanan): Cetak adonan, lalu Selesai. Jika TIDAK (Bawah): Apakah adonan terlalu keras? Jika YA (Kanan): Tambah sedikit air. Jika TIDAK (Bawah): Biarkan. Tarik garis kembali ke atas untuk Aduk adonan lagi." },
+            { id: 10, title: "Soal 10: Petualangan RPG (Boss Fight)", text: "Serang Monster. HP Monster berkurang. Apakah HP Monster <= 0? Jika YA (Kanan): 'Level Cleared' (Selesai). Jika TIDAK (Bawah): Monster membalas! Apakah HP Karakter <= 0? Jika YA (Kanan): 'Game Over' (Selesai). Jika TIDAK (Bawah): Kembali ke atas untuk Serang Monster lagi." }
         ];
 
         let currentQuestionIndex = 0;
-        // Generate state statis untuk 10 pertanyaan
         let appState = Array.from({ length: questions.length }, () => ({ nodes: [], edges: [] }));
 
         // KONFIGURASI NATIVE CANVAS
@@ -186,14 +186,14 @@
         const ctx = canvas.getContext('2d');
         const wrapper = document.getElementById('canvas-wrapper');
         
-        let camera = { x: 0, y: 0 }; // Untuk Panning Kertas
+        let camera = { x: 0, y: 0 };
         
         // VARIABEL INTERAKSI CANVAS
         let selectedNodeId = null;
         let selectedEdgeId = null;
-        let hoveredPort = null; // { nodeId, port }
+        let hoveredPort = null; 
         let hoveredNode = null;
-        let connectingPort = null; // { nodeId, port }
+        let connectingPort = null; 
         
         let isDraggingNode = false;
         let isPanningCanvas = false;
@@ -203,11 +203,10 @@
         
         let editingNodeId = null; 
 
-        // Konstanta Ukuran Bangun
         const NODE_W = 160;
         const NODE_H = 80;
         const PORT_RADIUS = 8;
-        const HIT_PADDING = 15; // Jarak toleransi klik
+        const HIT_PADDING = 20;
 
         window.onload = () => {
             resizeCanvas();
@@ -216,25 +215,21 @@
             renderSidebar();
             selectQuestion(0);
             
-            // Mouse & Touch Events untuk Native Canvas
             canvas.addEventListener('pointerdown', handlePointerDown);
-            window.addEventListener('pointermove', handlePointerMove); // Listen di window agar tidak lepas saat drag cepat
+            window.addEventListener('pointermove', handlePointerMove);
             window.addEventListener('pointerup', handlePointerUp);
             canvas.addEventListener('dblclick', handleDoubleClick);
             
-            // Delete support
             canvas.addEventListener('keydown', (e) => {
                 if (e.key === 'Delete' || e.key === 'Backspace') {
                     deleteSelected();
                 }
             });
             
-            // Render Loop (60 FPS)
             requestAnimationFrame(renderCanvas);
         };
 
         function resizeCanvas() {
-            // Support Retina Display (High DPI)
             const rect = wrapper.getBoundingClientRect();
             const dpr = window.devicePixelRatio || 1;
             canvas.width = rect.width * dpr;
@@ -273,14 +268,12 @@
             document.getElementById('q-badge').innerText = `Soal ${index + 1}`;
             document.getElementById('q-text').innerText = questions[index].text;
             
-            // Reset Kamera ke tengah
             camera = { x: 0, y: 0 };
             updateBackgroundPan();
             renderCanvas();
         }
 
         function updateBackgroundPan() {
-            // Menggeser pola titik background CSS agar seirama dengan canvas
             canvas.style.backgroundPosition = `${camera.x}px ${camera.y}px`;
         }
 
@@ -312,7 +305,6 @@
         function generateId() { return 'id_' + Math.random().toString(36).substr(2, 9); }
 
         function addNode(type) {
-            // Hitung tengah layar dikurangi posisi kamera
             const rect = wrapper.getBoundingClientRect();
             const centerX = (rect.width / 2) - camera.x - (NODE_W / 2);
             const centerY = (rect.height / 2) - camera.y - (NODE_H / 2);
@@ -332,7 +324,6 @@
             renderCanvas();
         }
 
-        // Fungsi mendapatkan kordinat absolut Port di dunia Canvas
         function getPortPos(node, portDir) {
             let h = node.type === 'decision' ? 100 : NODE_H;
             if (portDir === 'top') return { x: node.x + NODE_W/2, y: node.y };
@@ -349,7 +340,6 @@
                 const ports = ['top', 'right', 'bottom', 'left'];
                 for (const p of ports) {
                     const pos = getPortPos(node, p);
-                    // Hitbox lebih besar (radius + padding)
                     if (Math.hypot(wx - pos.x, wy - pos.y) < PORT_RADIUS + HIT_PADDING) {
                         return { nodeId: node.id, port: p };
                     }
@@ -360,7 +350,6 @@
 
         function checkHitNode(wx, wy) {
             const state = appState[currentQuestionIndex];
-            // Loop terbalik agar node paling atas (terakhir dirender) kena duluan
             for (let i = state.nodes.length - 1; i >= 0; i--) {
                 const node = state.nodes[i];
                 let h = node.type === 'decision' ? 100 : NODE_H;
@@ -372,7 +361,6 @@
         }
 
         function checkHitEdge(wx, wy) {
-            // Pendekatan sederhana: cek bounding box dengan margin dari garis lengkung
             const state = appState[currentQuestionIndex];
             for (let i = state.edges.length - 1; i >= 0; i--) {
                 const edge = state.edges[i];
@@ -383,53 +371,43 @@
                 const p1 = getPortPos(fromNode, edge.fromPort);
                 const p2 = getPortPos(toNode, edge.toPort);
                 
-                // Hitung jarak titik mouse ke segmen garis lurus (sebagai perkiraan hitbox kasar tapi efektif)
                 const dist = pointToLineDistance(wx, wy, p1.x, p1.y, p2.x, p2.y);
-                if (dist < 15) return edge.id; // Lebar klik 15px
+                if (dist < 20) return edge.id; 
             }
             return null;
         }
 
         function pointToLineDistance(x, y, x1, y1, x2, y2) {
-            var A = x - x1;
-            var B = y - y1;
-            var C = x2 - x1;
-            var D = y2 - y1;
-            var dot = A * C + B * D;
-            var len_sq = C * C + D * D;
-            var param = -1;
+            var A = x - x1; var B = y - y1; var C = x2 - x1; var D = y2 - y1;
+            var dot = A * C + B * D; var len_sq = C * C + D * D; var param = -1;
             if (len_sq != 0) param = dot / len_sq;
             var xx, yy;
             if (param < 0) { xx = x1; yy = y1; }
             else if (param > 1) { xx = x2; yy = y2; }
             else { xx = x1 + param * C; yy = y1 + param * D; }
-            var dx = x - xx;
-            var dy = y - yy;
+            var dx = x - xx; var dy = y - yy;
             return Math.sqrt(dx * dx + dy * dy);
         }
 
         function handlePointerDown(e) {
-            canvas.focus(); // Pastikan bisa nangkap keyboard
+            canvas.focus();
             const rect = wrapper.getBoundingClientRect();
-            // Koordinat Layar
             const screenX = e.clientX - rect.left;
             const screenY = e.clientY - rect.top;
             
-            // Koordinat Dunia (Kanvas)
             const wx = screenX - camera.x;
             const wy = screenY - camera.y;
             
             lastMousePos = { x: screenX, y: screenY };
 
-            // 1. Cek Port dulu (karena prioritas di atas)
+            // 1. Cek Klik Titik Konektor (Port)
             const hitPort = checkHitPort(wx, wy);
             if (hitPort) {
                 if (!connectingPort) {
-                    connectingPort = hitPort; // Mulai tarik garis
+                    connectingPort = hitPort; 
                     selectedNodeId = hitPort.nodeId;
                     selectedEdgeId = null;
                 } else {
-                    // Jika sudah klik port, lalu klik port lain, sambungkan!
                     if (connectingPort.nodeId !== hitPort.nodeId) {
                         createEdge(connectingPort.nodeId, connectingPort.port, hitPort.nodeId, hitPort.port);
                     }
@@ -440,14 +418,14 @@
                 return;
             }
 
-            // Jika klik di luar saat sedang narik garis = Batal narik garis
+            // Batal nyambung kalau klik sembarangan
             if (connectingPort) {
                 connectingPort = null;
                 renderCanvas();
                 return;
             }
 
-            // 2. Cek Bangun (Node)
+            // 2. Cek Klik Bangun (Node)
             const hitNode = checkHitNode(wx, wy);
             if (hitNode) {
                 selectedNodeId = hitNode.id;
@@ -459,7 +437,7 @@
                 return;
             }
 
-            // 3. Cek Garis (Edge)
+            // 3. Cek Klik Garis (Edge)
             const hitEdge = checkHitEdge(wx, wy);
             if (hitEdge) {
                 selectedEdgeId = hitEdge;
@@ -469,7 +447,7 @@
                 return;
             }
 
-            // 4. Jika klik ruang kosong = Panning Kertas
+            // 4. Klik Kertas Kosong (Panning)
             selectedNodeId = null;
             selectedEdgeId = null;
             isPanningCanvas = true;
@@ -485,7 +463,6 @@
             
             worldMousePos = { x: screenX - camera.x, y: screenY - camera.y };
             
-            // Hover deteksi untuk mengubah cursor (hanya jalan di dalam area canvas)
             if (e.target === canvas) {
                 const hPort = checkHitPort(worldMousePos.x, worldMousePos.y);
                 const hNode = checkHitNode(worldMousePos.x, worldMousePos.y);
@@ -566,17 +543,16 @@
             renderCanvas();
         }
 
-        // FUNGSI UTAMA RENDER CANVAS (LOOPING)
         function renderCanvas() {
             const rect = wrapper.getBoundingClientRect();
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Hapus layar
+            ctx.clearRect(0, 0, canvas.width, canvas.height); 
             
             ctx.save();
-            ctx.translate(camera.x, camera.y); // Geser kamera dunia
+            ctx.translate(camera.x, camera.y); 
 
             const state = appState[currentQuestionIndex];
 
-            // 1. GAMBAR SEMUA GARIS (EDGES)
+            // 1. GAMBAR GARIS (EDGES)
             state.edges.forEach(edge => {
                 const fromNode = state.nodes.find(n => n.id === edge.from);
                 const toNode = state.nodes.find(n => n.id === edge.to);
@@ -589,7 +565,6 @@
                 ctx.strokeStyle = isSelected ? '#3b82f6' : '#64748b';
                 ctx.lineWidth = isSelected ? 5 : 3;
 
-                // Garis Bezier Lengkung yang cantik
                 const curve = Math.max(Math.abs(p2.y - p1.y) / 2, Math.abs(p2.x - p1.x) / 2, 50);
                 
                 ctx.beginPath();
@@ -597,44 +572,44 @@
                 ctx.bezierCurveTo(p1.x, p1.y + curve, p2.x, p2.y - curve, p2.x, p2.y);
                 ctx.stroke();
 
-                // Panah di ujung (toPort)
                 drawArrowhead(ctx, p2.x, p2.y, p2.x, p2.y - curve);
 
-                // Teks YA / TIDAK Khusus untuk Belah Ketupat (Decision)
+                // TEKS TRUE/FALSE HOTS LOGIC
                 if (fromNode.type === 'decision') {
-                    ctx.font = '900 14px Nunito';
+                    ctx.font = '900 15px Nunito';
                     if (edge.fromPort === 'right') {
-                        ctx.fillStyle = '#16a34a'; // Hijau
-                        ctx.fillText('YA (TRUE)', p1.x + 40, p1.y - 15);
+                        ctx.fillStyle = '#16a34a'; 
+                        // Teks tepat di atas mulainya panah kanan
+                        ctx.fillText('YA (TRUE)', p1.x + 45, p1.y - 12);
                     } else if (edge.fromPort === 'bottom') {
-                        ctx.fillStyle = '#dc2626'; // Merah
-                        ctx.fillText('TIDAK (FALSE)', p1.x + 55, p1.y + 20);
+                        ctx.fillStyle = '#dc2626'; 
+                        // Teks tepat di samping mulainya panah bawah
+                        ctx.fillText('TIDAK (FALSE)', p1.x + 60, p1.y + 25);
                     }
                 }
             });
 
-            // 2. GAMBAR GARIS SEMENTARA (Saat Klik Sambungan Pertama)
+            // 2. GAMBAR GARIS SEMENTARA (Saat proses sambung)
             if (connectingPort) {
                 const node = state.nodes.find(n => n.id === connectingPort.nodeId);
                 if (node) {
                     const p1 = getPortPos(node, connectingPort.port);
                     ctx.strokeStyle = '#3b82f6';
                     ctx.lineWidth = 4;
-                    ctx.setLineDash([8, 8]); // Garis Putus-putus
+                    ctx.setLineDash([8, 8]); 
                     ctx.beginPath();
                     ctx.moveTo(p1.x, p1.y);
                     
                     const curve = Math.max(Math.abs(worldMousePos.y - p1.y) / 2, Math.abs(worldMousePos.x - p1.x) / 2, 50);
                     ctx.bezierCurveTo(p1.x, p1.y + curve, worldMousePos.x, worldMousePos.y - curve, worldMousePos.x, worldMousePos.y);
                     ctx.stroke();
-                    ctx.setLineDash([]); // Reset agar garis lain tak putus-putus
+                    ctx.setLineDash([]); 
                     
-                    // Panah sementara
                     drawArrowhead(ctx, worldMousePos.x, worldMousePos.y, worldMousePos.x, worldMousePos.y - curve);
                 }
             }
 
-            // 3. GAMBAR SEMUA BANGUN (NODES)
+            // 3. GAMBAR BANGUN (NODES)
             state.nodes.forEach(node => {
                 ctx.save();
                 ctx.translate(node.x, node.y);
@@ -643,7 +618,6 @@
                 let w = NODE_W;
                 let h = node.type === 'decision' ? 100 : NODE_H;
 
-                // Konfigurasi Bayangan (Shadow)
                 ctx.shadowColor = isSelected ? 'rgba(59, 130, 246, 0.5)' : 'rgba(0, 0, 0, 0.1)';
                 ctx.shadowBlur = isSelected ? 15 : 10;
                 ctx.shadowOffsetY = 4;
@@ -651,7 +625,6 @@
                 ctx.beginPath();
                 if (node.type === 'terminator') {
                     ctx.fillStyle = '#fecdd3'; ctx.strokeStyle = '#f43f5e';
-                    // Fallback jika roundRect blm didukung browser tua
                     if(ctx.roundRect) ctx.roundRect(0, 0, w, h, 40);
                     else { ctx.rect(0,0,w,h); } 
                 } 
@@ -670,24 +643,20 @@
                 }
 
                 ctx.fill();
-                
-                // Matikan bayangan untuk stroke
                 ctx.shadowColor = 'transparent';
                 ctx.lineWidth = isSelected ? 4 : 3;
                 if(isSelected) ctx.strokeStyle = '#3b82f6';
                 ctx.stroke();
 
-                // Gambar Teks Terpusat
                 ctx.fillStyle = '#1e293b';
                 ctx.font = 'bold 13px Nunito';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 wrapTextCanvas(ctx, node.text, w/2, h/2, w - 30, 18);
 
-                ctx.restore(); // Kembalikan koordinat asli
+                ctx.restore(); 
 
-                // 4. GAMBAR TITIK PORTS (Lingkaran Kuning)
-                // Selalu tampilkan port agar gampang diklik
+                // 4. GAMBAR PORTS (Titik Kuning)
                 const ports = ['top', 'right', 'bottom', 'left'];
                 ports.forEach(p => {
                     const pos = getPortPos(node, p);
@@ -695,7 +664,7 @@
                     const isActivePort = (connectingPort && connectingPort.nodeId === node.id && connectingPort.port === p);
                     
                     ctx.beginPath();
-                    ctx.arc(pos.x, pos.y, (isHoveredPort || isActivePort) ? PORT_RADIUS + 3 : PORT_RADIUS, 0, 2 * Math.PI);
+                    ctx.arc(pos.x, pos.y, (isHoveredPort || isActivePort) ? PORT_RADIUS + 4 : PORT_RADIUS, 0, 2 * Math.PI);
                     ctx.fillStyle = isActivePort ? '#3b82f6' : (isHoveredPort ? '#bfdbfe' : '#fef08a');
                     ctx.fill();
                     ctx.lineWidth = 3;
@@ -705,14 +674,10 @@
             });
 
             ctx.restore();
-
-            // Lanjut gambar frame berikutnya (Animasi loop)
             requestAnimationFrame(renderCanvas);
         }
 
-        // Fungsi Bantu Gambar Arah Panah yang Sesuai Arah Garis Lengkung
         function drawArrowhead(ctx, x, y, startX, startY) {
-            // Kalkulasi sudut dari titik sebelum akhir (startY) menuju titik akhir (y)
             const angle = Math.atan2(y - startY, x - startX);
             const size = 12;
             
@@ -728,7 +693,6 @@
             ctx.restore();
         }
 
-        // Fungsi Bantu Pembungkus Teks
         function wrapTextCanvas(ctx, text, x, y, maxWidth, lineHeight) {
             const words = text.split(' ');
             let line = '';
@@ -747,7 +711,6 @@
             }
             lines.push(line);
             
-            // Hitung posisi Y agar teks terpusat secara vertikal di tengah kotak
             let startY = y - ((lines.length - 1) * lineHeight) / 2;
             
             for(let i = 0; i < lines.length; i++) {
@@ -811,7 +774,6 @@
                 const edges = state.edges;
 
                 if (nodes.length > 0) {
-                    // Nilai Bangun
                     const terminators = nodes.filter(n => n.type === 'terminator');
                     if (terminators.length >= 1) score += 10; 
                     if (terminators.length >= 2) score += 10; 
@@ -819,11 +781,9 @@
                     const decisions = nodes.filter(n => n.type === 'decision');
                     if (decisions.length >= 1) score += 30;
 
-                    // Nilai Kompleksitas
                     if (nodes.length >= 5) score += 20;
                     else if (nodes.length >= 3) score += 10;
 
-                    // Nilai Koneksi Garis
                     if (edges.length >= nodes.length - 1 && nodes.length > 1) {
                         score += 30;
                     } else if (edges.length > 0) {
@@ -833,14 +793,14 @@
                 totalScore += score;
             });
 
-            // Hitung rata-rata dari seluruh total pertanyaan (10 soal)
+            // Pembagian dinamis berdasarkan jumlah pertanyaan (sekarang 10)
             let finalScore = Math.round(totalScore / questions.length);
             if(finalScore > 100) finalScore = 100;
             
             let message = ""; let emoji = "";
-            if (finalScore >= 80) { message = "Luar biasa! Logika flowchart-mu sangat tajam dan rapi!"; emoji = "fa-trophy text-yellow-400"; } 
-            else if (finalScore >= 60) { message = "Bagus! Jangan lupa logika arah panahnya ya."; emoji = "fa-thumbs-up text-blue-500"; } 
-            else { message = "Tetap semangat! Pelajari lagi garis awal dan akhirnya."; emoji = "fa-book-open text-emerald-500"; }
+            if (finalScore >= 80) { message = "Luar biasa! Logika algoritmamu sangat tajam dan jenius!"; emoji = "fa-trophy text-yellow-400"; } 
+            else if (finalScore >= 60) { message = "Bagus! Jangan lupa logika arah panahnya (YA/TIDAK) ya."; emoji = "fa-thumbs-up text-blue-500"; } 
+            else { message = "Tetap semangat! Pelajari lagi percabangan dan perulangannya."; emoji = "fa-book-open text-emerald-500"; }
 
             const resultOverlay = document.createElement('div');
             resultOverlay.className = 'fixed inset-0 bg-slate-900/90 flex items-center justify-center p-4 z-[999999] backdrop-blur-sm';
